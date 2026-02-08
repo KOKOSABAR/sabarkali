@@ -227,8 +227,9 @@ function updateCategoryList() {
 document.getElementById('note-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('save-note-btn');
-    const label = btn.querySelector('strong');
+    const label = btn.querySelector('strong') || btn; // Resilient to missing strong tag
     btn.disabled = true;
+    const oldText = label.textContent;
     label.textContent = 'SAVING...';
 
     const payload = {
@@ -247,10 +248,13 @@ document.getElementById('note-form').addEventListener('submit', async (e) => {
             noteModal.classList.remove('active');
             fetchNotes();
         }
-    } catch (e) { showToast('Server error', 'error'); }
+    } catch (e) {
+        showToast('Server error', 'error');
+        console.error(e);
+    }
 
     btn.disabled = false;
-    label.textContent = 'SAVE NOTE';
+    label.textContent = oldText || 'SAVE NOTE';
 });
 
 window.editNote = (id) => {
@@ -330,37 +334,41 @@ async function fetchExtensions() {
 document.getElementById('extension-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('upload-btn');
-    const label = btn.querySelector('strong');
+    const label = btn.querySelector('strong') || btn; // Resilient to missing strong tag
     const file = document.getElementById('ext-file').files[0];
     const name = document.getElementById('ext-name').value;
 
     if (!file) return showToast('Please select a file', 'error');
     btn.disabled = true;
+    const oldText = label.textContent;
     label.textContent = 'UPLOADING...';
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
-        const base64 = reader.result.split(',')[1];
         try {
-            const resp = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'uploadExtension',
-                    fileName: name || file.name,
-                    base64: base64,
-                    description: 'Direct Hub Upload'
-                })
-            });
+            const base64 = reader.result.split(',')[1];
+            const payload = {
+                action: 'uploadExtension',
+                fileName: name || file.name,
+                base64: base64,
+                description: 'Direct Hub Upload'
+            };
+            const resp = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
             const res = await resp.json();
             if (res.success) {
                 showToast('Upload successful!', 'success');
                 document.getElementById('extension-modal').classList.remove('active');
                 fetchExtensions();
-            } else { showToast(res.error, 'error'); }
-        } catch (err) { showToast('Upload failed', 'error'); }
+            } else {
+                showToast(res.error || 'Upload failed', 'error');
+            }
+        } catch (e) {
+            showToast('Server error', 'error');
+            console.error(e);
+        }
         btn.disabled = false;
-        label.textContent = 'START UPLOAD';
+        label.textContent = oldText || 'START UPLOAD';
     };
 });
 
