@@ -131,6 +131,7 @@ body {
     border-radius: 16px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
+    text-transform: uppercase;
 }
 
 .nav-link i {
@@ -263,6 +264,7 @@ body {
     font-weight: 600;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    text-transform: uppercase;
 }
 
 .pill:hover {
@@ -280,6 +282,8 @@ body {
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: 1fr;
+    /* Memastikan semua card dalam satu baris memiliki tinggi yang sama */
     gap: 24px;
     padding: 10px;
 }
@@ -303,7 +307,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 320px;
+    height: 450px;
+    /* Ukuran tetap agar semua card sama besar */
 }
 
 .card2:hover {
@@ -321,6 +326,7 @@ body {
     font-weight: 700;
     color: #fff;
     margin-bottom: 12px;
+    text-transform: uppercase;
 }
 
 .card2 .content-text {
@@ -328,6 +334,12 @@ body {
     color: #94a3b8;
     line-height: 1.6;
     flex-grow: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 12;
+    /* Batasi jumlah baris agar tetap rapi */
+    line-clamp: 12;
+    -webkit-box-orient: vertical;
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -348,16 +360,15 @@ body {
     position: absolute;
     top: -12px;
     left: 20px;
-    background: linear-gradient(163deg, #00ff75 0%, #3700ff 100%);
-    color: white;
-    padding: 4px 14px;
-    border-radius: 50px;
+    background: var(--primary);
+    color: #000;
+    padding: 4px 12px;
+    border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    z-index: 10;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 255, 117, 0.3);
+    z-index: 5;
 }
 
 .ext-icon-box {
@@ -1177,7 +1188,487 @@ td {
     min-height: 300px;
 }
 
-/* --- LOGIN SYSTEM STYLES --- */
+/* --- Kas Dashboard (sync Sheet) --- */
+.kas-dashboard {
+    padding: 1rem;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.kas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Layout seperti sheet DASHBOARD: urutan dan lebar kolom */
+.kas-grid-dashboard {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto auto auto auto auto;
+}
+
+.kas-grid-dashboard {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    /* Gunakan 6 kolom dasar untuk fleksibilitas */
+    gap: 15px;
+    padding: 10px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.kas-grid-dashboard .kas-panel-wide {
+    grid-column: span 6;
+}
+
+.kas-grid-dashboard .kas-balance-row {
+    grid-column: span 2;
+    /* 3 panel balance akan sejajar sempurna (2+2+2 = 6) */
+}
+
+/* Panel List (Deposit, WD, dll) */
+.kas-grid-dashboard .kas-panel:not(.kas-panel-wide):not(.kas-balance-row) {
+    grid-column: span 2;
+    /* Menampilkan 3 list per baris pada layar besar */
+}
+
+@media (max-width: 1300px) {
+    .kas-grid-dashboard .kas-panel:not(.kas-panel-wide):not(.kas-balance-row) {
+        grid-column: span 3;
+        /* Menampilkan 2 list per baris pada layar medium */
+    }
+}
+
+@media (max-width: 900px) {
+    .kas-grid-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .kas-grid-dashboard .kas-panel-wide,
+    .kas-grid-dashboard .kas-balance-row,
+    .kas-grid-dashboard .kas-panel {
+        grid-column: span 1 !important;
+    }
+}
+
+.kas-panel {
+    background: rgba(13, 17, 23, 0.85);
+    /* Default dark */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Identitas Warna Baru untuk Setiap Panel */
+.kas-panel:has(.kas-header-deposit) {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(13, 17, 23, 0.9) 100%);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.kas-panel:has(.kas-header-withdraw) {
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(13, 17, 23, 0.9) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.kas-panel:has(.kas-header-pending) {
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(13, 17, 23, 0.9) 100%);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.kas-panel:has(.kas-header-doc) {
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(13, 17, 23, 0.9) 100%);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.kas-panel:has(.kas-header-yellow) {
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, rgba(13, 17, 23, 0.9) 100%);
+    border-color: rgba(251, 191, 36, 0.2);
+}
+
+.kas-panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.kas-panel-wide {
+    grid-column: 1 / -1;
+}
+
+.kas-panel-header {
+    padding: 16px 20px;
+    font-weight: 800;
+    font-size: 1.0rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.kas-header-yellow {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    color: #000;
+}
+
+.kas-header-doc {
+    background: linear-gradient(90deg, #8b5cf6, #d946ef);
+    color: #fff;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.kas-header-green {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    color: #000;
+}
+
+.kas-header-deposit {
+    background: linear-gradient(90deg, #059669, #10b981);
+    color: #fff;
+}
+
+.kas-header-withdraw {
+    background: linear-gradient(90deg, #dc2626, #f87171);
+    color: #fff;
+}
+
+.kas-header-pending {
+    background: linear-gradient(90deg, #d97706, #fbbf24);
+    color: #fff;
+}
+
+.kas-header-white {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.kas-panel-body {
+    padding: 12px;
+    font-size: 0.85rem;
+}
+
+.kas-balance-row {
+    min-width: 0;
+}
+
+.kas-balance-box {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70px;
+    background: rgba(0, 0, 0, 0.3);
+    font-family: 'Monaco', 'Consolas', monospace;
+    letter-spacing: -1px;
+    padding: 10px;
+}
+
+.kas-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    /* Fallback for very small screens */
+    border-radius: 0 0 16px 16px;
+}
+
+.kas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    /* Ukuran pas agar muat tanpa horizontal scroll */
+    table-layout: auto;
+}
+
+.kas-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8 !important;
+    font-weight: 800;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 6px;
+    /* Padding horisontal diperkecil agar pas */
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kas-table td {
+    padding: 12px 6px;
+    /* Padding horisontal diperkecil */
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    white-space: nowrap;
+    color: #e2e8f0;
+    transition: background 0.2s ease;
+}
+
+.kas-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.kas-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.kas-table-doc th {
+    background: rgba(168, 85, 247, 0.4) !important;
+    color: #fff !important;
+}
+
+.kas-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kas-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    gap: 15px;
+    transition: all 0.2s;
+    border-radius: 6px;
+}
+
+.kas-list li:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.kas-list li:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.01);
+}
+
+.kas-list-label {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.kas-list-value {
+    font-weight: 800;
+    color: #fff;
+    text-align: right;
+    font-family: 'Consolas', monospace;
+    font-size: 1.1rem;
+}
+
+.kas-list-empty {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.kas-panel-quote .kas-quote-body {
+    padding: 14px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.kas-quote-body p {
+    margin: 0 0 6px 0;
+}
+
+.kas-quote-highlight {
+    color: var(--primary) !important;
+    font-weight: 700;
+}
+
+.kas-quote-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.kas-quote-hashtag {
+    margin-top: 8px !important;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.kas-actions {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.kas-actions .btn {
+    min-width: 180px;
+}
+
+/* Kas sheet tabs (SABAR | DATA KAS 1 | KERUGIAN Pt) */
+.kas-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1rem;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.kas-tab {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s, background 0.2s;
+}
+
+.kas-tab span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kas-tab:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.kas-tab.active {
+    color: var(--text-main);
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.kas-tab.active[data-underline="blue"]::after {
+    background: #3b82f6;
+}
+
+.kas-tab.active[data-underline="yellow"]::after {
+    background: #fbbf24;
+}
+
+.kas-tab.active[data-underline="magenta"]::after {
+    background: #d946ef;
+}
+
+.kas-tab.active[data-underline="red"]::after {
+    background: #ef4444;
+}
+
+.kas-tab::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.kas-tab.active::after {
+    background: #fbbf24;
+}
+
+.kas-tab.active[data-underline="blue"]::after {
+    background: #3b82f6;
+}
+
+.kas-tab.active[data-underline="yellow"]::after {
+    background: #fbbf24;
+}
+
+.kas-tab.active[data-underline="magenta"]::after {
+    background: #d946ef;
+}
+
+.kas-tab.active[data-underline="red"]::after {
+    background: #ef4444;
+}
+
+.kas-tab-arrow {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.kas-sheet-panel .kas-header-sheet {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+/* ALL SALDO – baris ringkasan (BALANCE REAL, BALANCE DOC, SALDO ALL DEPO, SALDO ALL KAS) */
+.kas-allsaldo-summary {
+    margin-bottom: 1rem;
+}
+
+.kas-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.kas-summary-card {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kas-summary-card.positive {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.kas-summary-card.negative {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.kas-summary-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kas-summary-card.positive .kas-summary-value {
+    color: #86efac;
+    font-weight: 700;
+}
+
+.kas-summary-card.negative .kas-summary-value {
+    color: #fca5a5;
+    font-weight: 700;
+}
+
+.kas-summary-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+/* --- LOGIN SYSTEM STYLES (Uiverse by Priyanshu02020) --- */
 body.login-pending #dashboard-app {
     display: none !important;
 }
@@ -1197,118 +1688,341 @@ body:not(.login-pending) #login-screen {
     display: none !important;
 }
 
+#login-screen .login-container {
+    --form-width: 315px;
+    --aspect-ratio: 1.55;
+    --login-box-color: #272727;
+    --input-color: #3a3a3a;
+    --button-color: #373737;
+    --footer-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--login-box-color);
+    border-radius: 24px;
+    width: calc(var(--form-width) + 1px);
+    height: calc(var(--form-width) * var(--aspect-ratio) + 1px);
+    z-index: 8;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 0 8px rgba(255, 255, 255, 0.1),
+        0 0 16px rgba(255, 255, 255, 0.08);
+}
+
+#login-screen .login-container::before {
+    content: "";
+    position: absolute;
+    inset: -50px;
+    z-index: -2;
+    background: conic-gradient(from 45deg,
+            transparent 75%,
+            #fff,
+            transparent 100%);
+    animation: login-spin 4s ease-in-out infinite;
+}
+
+@keyframes login-spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#login-screen .login-box {
+    background: var(--login-box-color);
+    border-radius: 24px;
+    padding: 28px;
+    width: var(--form-width);
+    height: calc(var(--form-width) * var(--aspect-ratio));
+    position: absolute;
+    z-index: 10;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow:
+        inset 0 40px 60px -8px rgba(255, 255, 255, 0.12),
+        inset 4px 0 12px -6px rgba(255, 255, 255, 0.12),
+        inset 0 0 12px -4px rgba(255, 255, 255, 0.12);
+}
+
 #login-screen .form {
     display: flex;
+    justify-content: center;
+    align-items: center;
     flex-direction: column;
-    gap: 15px;
-    padding: 2.5rem 2rem;
-    background-color: #171717;
-    border-radius: 25px;
-    transition: 0.4s ease-in-out;
-    width: 100%;
+    gap: 10px;
 }
 
-#login-screen .card {
-    background-image: linear-gradient(163deg, #00ff75 0%, #3700ff 100%);
-    border-radius: 22px;
-    transition: all 0.3s;
-    width: 100%;
-    max-width: 400px;
-}
-
-#login-screen .card2 {
-    background-color: #171717;
+#login-screen .logo {
+    width: 65px;
+    height: 65px;
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.2),
+            rgba(0, 0, 0, 0.2));
+    box-shadow:
+        8px 8px 16px rgba(0, 0, 0, 0.2),
+        -8px -8px 16px rgba(255, 255, 255, 0.06);
     border-radius: 20px;
-    transition: all 0.2s;
-    min-height: auto;
-    padding: 0;
+    border: 2px solid #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
-#login-screen .card2:hover {
-    transform: scale(0.98);
+#login-screen .logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
 }
 
-#login-screen .card:hover {
+#login-screen .header {
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 6px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-screen .input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: var(--input-color);
+    color: white;
+    outline: none;
+    font-size: 14px;
+}
+
+#login-screen .input:focus {
+    border: 1px solid #fff;
+}
+
+#login-screen .button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    gap: 10px;
+    background: var(--button-color);
+    color: white;
+    transition: 0.3s;
+    box-shadow:
+        inset 0px 3px 6px -4px rgba(255, 255, 255, 0.6),
+        inset 0px -3px 6px -2px rgba(0, 0, 0, 0.8);
+}
+
+#login-screen .sign-in {
+    margin-top: 5px;
+}
+
+#login-screen .login-motto {
+    width: 100%;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+#login-screen .login-motto p {
+    margin: 0 0 4px 0;
+}
+
+#login-screen .login-motto .quote {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 6px;
+}
+
+#login-screen .login-motto .sub {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 2px;
+}
+
+#login-screen .button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow:
+        inset 0px 3px 6px rgba(255, 255, 255, 0.6),
+        inset 0px -3px 6px rgba(0, 0, 0, 0.8),
+        0px 0px 8px rgba(255, 255, 255, 0.05);
+}
+
+#login-screen .footer {
+    width: 100%;
+    text-align: left;
+    color: var(--footer-color);
+    font-size: 12px;
+}
+
+#login-screen .footer .link {
+    position: relative;
+    color: var(--footer-color);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+#login-screen .footer .link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    border-radius: 6px;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s ease;
+}
+
+#login-screen .footer .link:hover {
+    color: #fff;
+}
+
+#login-screen .footer .link:hover::after {
+    width: 100%;
+}
+
+/* --- Dynamic Card Colors --- */
+.card.accent-1 {
+    background-image: linear-gradient(163deg, #00ff75 0%, #3700ff 100%);
+}
+
+.card.accent-1:hover {
     box-shadow: 0px 0px 30px 1px rgba(0, 255, 117, 0.3);
 }
 
-#login-screen #heading {
-    text-align: center;
-    margin: 1rem 0 2rem 0;
-    color: rgb(255, 255, 255);
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: 2px;
-    background: linear-gradient(to right, #00ff75, #3700ff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+.card.accent-2 {
+    background-image: linear-gradient(163deg, #00ccff 0%, #3700ff 100%);
 }
 
-#login-screen .field {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8em;
-    border-radius: 25px;
-    padding: 1rem 1.5rem;
-    border: none;
-    outline: none;
-    color: white;
-    background-color: #171717;
-    box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+.card.accent-2:hover {
+    box-shadow: 0px 0px 30px 1px rgba(0, 204, 255, 0.3);
 }
 
-#login-screen .input-icon {
-    font-size: 1.1rem;
-    color: var(--primary);
+.card.accent-3 {
+    background-image: linear-gradient(163deg, #ffcc00 0%, #ff4757 100%);
 }
 
-#login-screen .input-field {
-    background: none;
-    border: none;
-    outline: none;
-    width: 100%;
-    color: #fff;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
+.card.accent-3:hover {
+    box-shadow: 0px 0px 30px 1px rgba(255, 204, 0, 0.3);
 }
 
-#login-screen .btn {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 1.5rem;
-    background: none;
-    border: none;
-    padding: 0;
-    position: static;
-    overflow: visible;
+.card.accent-4 {
+    background-image: linear-gradient(163deg, #8b5cf6 0%, #d946ef 100%);
 }
 
-#login-screen .button1,
-#login-screen .button2 {
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    transition: 0.4s ease-in-out;
-    background-color: #252525;
-    color: white;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    flex: 1;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.card.accent-4:hover {
+    box-shadow: 0px 0px 30px 1px rgba(139, 92, 246, 0.3);
 }
 
-#login-screen .button1:hover {
-    background: var(--primary);
-    color: #000;
+.card.accent-5 {
+    background-image: linear-gradient(163deg, #f59e0b 0%, #d97706 100%);
 }
 
-#login-screen .button2:hover {
-    background: #444;
+.card.accent-5:hover {
+    box-shadow: 0px 0px 30px 1px rgba(245, 158, 11, 0.3);
+}
+
+.card.accent-6 {
+    background-image: linear-gradient(163deg, #10b981 0%, #059669 100%);
+}
+
+.card.accent-6:hover {
+    box-shadow: 0px 0px 30px 1px rgba(16, 185, 129, 0.3);
+}
+
+/* Overriding individual colors for meta text/icons based on accent */
+.card.accent-1 .meta-text,
+.card.accent-1 .ext-icon-box i {
+    color: #00ff75;
+}
+
+.card.accent-1 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #001f0e 100%);
+}
+
+.card.accent-1 .ext-icon-box {
+    background: rgba(0, 255, 117, 0.1);
+}
+
+.card.accent-2 .meta-text,
+.card.accent-2 .ext-icon-box i {
+    color: #00ccff;
+}
+
+.card.accent-2 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #001433 100%);
+}
+
+.card.accent-2 .ext-icon-box {
+    background: rgba(0, 204, 255, 0.1);
+}
+
+.card.accent-3 .meta-text,
+.card.accent-3 .ext-icon-box i {
+    color: #ffcc00;
+}
+
+.card.accent-3 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #292100 100%);
+}
+
+.card.accent-3 .ext-icon-box {
+    background: rgba(255, 204, 0, 0.1);
+}
+
+.card.accent-4 .meta-text,
+.card.accent-4 .ext-icon-box i {
+    color: #d946ef;
+}
+
+.card.accent-4 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #1a0029 100%);
+}
+
+.card.accent-4 .ext-icon-box {
+    background: rgba(217, 70, 239, 0.1);
+}
+
+.card.accent-5 .meta-text,
+.card.accent-5 .ext-icon-box i {
+    color: #f59e0b;
+}
+
+.card.accent-5 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #291800 100%);
+}
+
+.card.accent-5 .ext-icon-box {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.card.accent-6 .meta-text,
+.card.accent-6 .ext-icon-box i {
+    color: #10b981;
+}
+
+.card.accent-6 .card2 {
+    background: linear-gradient(163deg, #1a1a1a 0%, #00291d 100%);
+}
+
+.card.accent-6 .ext-icon-box {
+    background: rgba(16, 185, 129, 0.1);
 }

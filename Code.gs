@@ -28,6 +28,8 @@ function doGet(e) {
     const action = e.parameter.action;
     if (action === 'getExtensions') return getExtensions();
     if (action === 'getNotes') return getNotes();
+    if (action === 'getKasDashboard') return getKasDashboard(e);
+    if (action === 'getSheetData') return getSheetData(e);
     return response({ success: false, error: 'Invalid action' });
   } catch (err) {
     return response({ success: false, error: err.toString() });
@@ -121,6 +123,8 @@ function getExtensions() {
   }
   return response({ success: true, data: results });
 }
+
+// --- Kas Dashboard: getKasDashboard & getSheetData ada di CodeKas.gs (pakai spreadsheet lain) ---
 
 function response(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))

@@ -235,30 +235,45 @@
             color: #00ff75;
             font-weight: bold;
         }
+
+        .p-lcd-input {
+            background: transparent;
+            border: none;
+            color: #ffcc00;
+            text-align: center;
+            width: 100%;
+            font-family: monospace;
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        .p-lcd-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
 
 <body class="login-pending">
     <!-- Login Screen -->
     <div id="login-screen">
-        <div class="card">
-            <div class="card2">
+        <div class="login-container">
+            <div class="login-box">
                 <form class="form" id="login-form">
-                    <p id="heading">LOGIN DULU NAPA</p>
-                    <div class="field">
-                        <i class="fas fa-user input-icon"></i>
-                        <input autocomplete="off" placeholder="Username" class="input-field" type="text"
-                            id="login-username" required>
+                    <div class="logo">
+                        <img src="assets/logo.png" alt="Logo" class="logo-img">
                     </div>
-                    <div class="field">
-                        <i class="fas fa-lock input-icon"></i>
-                        <input placeholder="Key / Password" class="input-field" type="password" id="login-password"
-                            required>
-                    </div>
-                    <div class="btn">
-                        <button type="submit"
-                            class="button1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Login&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                        <button type="button" class="button2" onclick="location.reload()">Reset</button>
+                    <p class="header">LOGIN DULU NAPA</p>
+                    <input autocomplete="off" placeholder="Username" class="input" type="text" id="login-username"
+                        required>
+                    <input placeholder="Key / Password" class="input" type="password" id="login-password" required>
+                    <button type="submit" class="button sign-in">Login</button>
+                    <div class="login-motto">
+                        <p>RAJINLAH BEKERJA, KURANGI BICARA</p>
+                        <p>SEDERHANA DALAM BERGAYA</p>
+                        <p>INGAT PEPATAH CINA</p>
+                        <p class="quote">"ME YOU CIEN ME YOU YOUNG"</p>
+                        <p class="sub">(TANPA UANG KITA TIDAK ADA GUNA)</p>
                     </div>
                 </form>
             </div>
@@ -292,6 +307,10 @@
                         <i class="fas fa-external-link-alt"></i>
                         <span>SHORTCUT</span>
                     </a>
+                    <a href="#" class="nav-link" data-target="kas-section">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Kas / Real Time</span>
+                    </a>
                 </nav>
 
                 <div class="sidebar-footer">
@@ -309,7 +328,24 @@
 
             <main class="main-content">
                 <header class="top-bar">
-                    <h1 id="page-title">Extensions</h1>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <h1 id="page-title">Extensions</h1>
+                        <div id="kas-header-actions"
+                            style="display: none; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                            <button class="btn" onclick="fetchKasDashboard()"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: var(--primary); color: #000; font-weight: 700;">
+                                <i class="fas fa-sync-alt"></i> REFRESH
+                            </button>
+                            <button class="btn" onclick="switchKasTo('DASHBOARD')"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: var(--primary); color: #000; font-weight: 700;">
+                                DASHBOARD
+                            </button>
+                            <button class="btn" onclick="switchKasTo('ALL SALDO')"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                ALL SALDO
+                            </button>
+                        </div>
+                    </div>
                     <div class="top-actions">
                         <button id="add-extension-btn" class="btn" type="button" style="height: 3rem; width: 11rem;">
                             <i class="fas fa-upload"></i> Upload ZIP
@@ -443,13 +479,13 @@
                             <!-- Category Navigator -->
                             <div class="category-nav">
                                 <button class="cat-btn active" onclick="switchShortcutCategory('tarik-manual', this)">
-                                    <i class="fas fa-robot"></i> TARIK MANUAL
+                                    <i class="fas fa-robot"></i> TARIK MANUAL WD POWER
                                 </button>
                                 <button class="cat-btn" onclick="switchShortcutCategory('tarik-manual-wd', this)">
-                                    <i class="fas fa-file-invoice-dollar"></i> TARIK MANUAL WD
+                                    <i class="fas fa-file-invoice-dollar"></i> TARIK MANUAL WD ADMIN
                                 </button>
                                 <button class="cat-btn" onclick="switchShortcutCategory('bagi-nominal', this)">
-                                    <i class="fas fa-hand-holding-usd"></i> BAGI NOMINAL
+                                    <i class="fas fa-hand-holding-usd"></i> BAGI NOMINAL WD
                                 </button>
                                 <button class="cat-btn" onclick="switchShortcutCategory('klikbca', this)">
                                     <i class="fas fa-university"></i> KLIKBCA
@@ -976,7 +1012,151 @@
                         </div>
                 </div>
                 </section>
-        </div>
+
+                <!-- Kas Dashboard Section (sync Google Sheet) -->
+                <section class="section section-content" id="kas-section">
+                    <div class="kas-dashboard">
+                        <!-- Navigation tabs removed as requested -->
+                        <div class="kas-sheet-panel kas-panel-wide" id="kas-sheet-panel">
+                            <div class="kas-panel-header kas-header-sheet" id="kas-sheet-panel-title"
+                                style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Data: DASHBOARD</span>
+                                <button type="button" class="btn" id="kas-refresh-btn-top" onclick="fetchKasDashboard()"
+                                    style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                    <i class="fas fa-sync-alt"></i> SYNC SHEET
+                                </button>
+                            </div>
+                            <div class="kas-panel-body">
+                                <div class="kas-allsaldo-summary" id="kas-allsaldo-summary"></div>
+                                <div id="kas-blocks-container"></div>
+                                <div class="table-scroll kas-sheet-table-wrapper">
+                                    <table class="kas-table" id="kas-sheet-table">
+                                        <thead id="kas-sheet-thead"></thead>
+                                        <tbody id="kas-sheet-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Layout mengikuti sheet DASHBOARD: Real Time → Balance → Sesuai Doc → Deposit/Withdraw/Pendingan → Quote → Saldo -->
+                        <div class="kas-grid kas-grid-dashboard">
+                            <div class="kas-panel kas-panel-wide">
+                                <div class="kas-panel-header kas-header-yellow">REAL TIME KAS 1</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table" id="kas-realtime-table">
+                                            <thead id="kas-realtime-thead"></thead>
+                                            <tbody id="kas-realtime-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header kas-header-green">REAL TIME BALANCE</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-realtime-balance">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header kas-header-green">BALANCE KAS 1</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-balance-kas1">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header"
+                                    style="background:rgba(255, 71, 87, 0.25); color:#ff4757; border-bottom:1px solid rgba(255, 71, 87, 0.2);">
+                                    SELISIH BALANCE</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-selisih-balance" style="color:#ff4757;">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-panel-wide">
+                                <div class="kas-panel-header kas-header-doc">SESUAI DOC KAS 1</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table kas-table-doc" id="kas-doc-table">
+                                            <thead id="kas-doc-thead"></thead>
+                                            <tbody id="kas-doc-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kas-panel kas-panel-wide" id="kas-crosscheck-panel" style="display:none;">
+                                <div class="kas-panel-header kas-header-crosscheck"
+                                    style="background: linear-gradient(90deg, #ff4757, #ff6b81); color: white;">STATUS
+                                    CROSSCHECK (SELISIH)</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table kas-table-crosscheck" id="kas-crosscheck-table">
+                                            <thead id="kas-crosscheck-thead"></thead>
+                                            <tbody id="kas-crosscheck-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Group Group Bank -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-deposit">DEPOSIT BANK</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-deposit-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-withdraw">WITHDRAW</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-withdraw-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-pending">PENDINGAN BANK</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-pendingan-list"></ul>
+                                </div>
+                            </div>
+
+                            <!-- Group Group E-Wallet -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-deposit"
+                                    style="background:linear-gradient(90deg, #00d2ff, #3a7bd5);">DEPOSIT E-WALLET</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-deposit-wallet-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel" style="background:transparent; border:none; box-shadow:none;"></div>
+                            <!-- Spacer -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-pending"
+                                    style="background:linear-gradient(90deg, #f7971e, #ffd200);">PENDINGAN E-WALLET
+                                </div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-pendingan-wallet-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO DEPO</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-depo-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO WD</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-wd-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO EWALLET</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-ewallet-list"></ul>
+                                </div>
+                            </div>
+                        </div> <!-- End of kas-grid-dashboard -->
+
+                </section>
+
+        </div> <!-- End of container/main-content -->
         </main>
     </div>
 

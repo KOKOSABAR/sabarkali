@@ -3,6 +3,8 @@
  */
 
 let WEB_APP_URL = localStorage.getItem('cfg_web_app_url') || 'https://script.google.com/macros/s/AKfycbxGIwzeaaVvFD1wft3Nyt2ceFaEeCSr49upvWRnisApgOdfzGbhy77RGyRAYt7wJVL9/exec';
+// URL deployment CodeKas (spreadsheet Kas terpisah). Jika diisi, section Kas memakai URL ini.
+let KAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxM4lvQX9udYswhc7ONJzAMLCgC0ckfmEWuNbwTzoeFvZ7P1rpotmRRMrMeXkvwjarX/exec';
 
 let allNotes = [];
 let currentCategory = 'all';
@@ -27,7 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('auth_success') === 'true' && WEB_APP_URL) {
         fetchNotes();
         fetchExtensions();
+        fetchKasDashboard();
     }
+    if (typeof setupKasTabs === 'function') setupKasTabs();
 });
 
 function initAuth() {
@@ -164,8 +168,9 @@ function renderNotes() {
     }
 
     [...filtered].reverse().forEach((note, index) => {
+        const accentIndex = (index % 6) + 1;
         const cardWrapper = document.createElement('div');
-        cardWrapper.className = 'card entry-anim';
+        cardWrapper.className = `card accent-${accentIndex} entry-anim`;
         cardWrapper.style.animationDelay = `${index * 0.05}s`;
         cardWrapper.ondblclick = (e) => toggleExpand(cardWrapper, e);
         cardWrapper.innerHTML = `
@@ -302,10 +307,11 @@ async function fetchExtensions() {
                 return;
             }
             files.forEach((f, idx) => {
+                const accentIndex = (idx % 6) + 1;
                 const isZip = f.name.toLowerCase().endsWith('.zip');
                 const icon = isZip ? 'fa-file-zipper' : 'fa-file-code';
                 const card = document.createElement('div');
-                card.className = 'card entry-anim';
+                card.className = `card accent-${accentIndex} entry-anim`;
                 card.style.animationDelay = `${idx * 0.05}s`;
                 card.ondblclick = (e) => toggleExpand(card, e);
                 card.innerHTML = `
@@ -329,6 +335,357 @@ async function fetchExtensions() {
             });
         }
     } catch (e) { console.error(e); }
+}
+
+let kasActiveTab = 'DASHBOARD';
+function getKasActiveTab() {
+    return kasActiveTab;
+}
+
+window.switchKasTo = (tab) => {
+    kasActiveTab = tab;
+
+    // Update active UI state for buttons in header actions
+    const container = document.getElementById('kas-header-actions');
+    if (container) {
+        container.querySelectorAll('.btn').forEach(btn => {
+            if (btn.textContent.trim().toUpperCase() === tab.toUpperCase()) {
+                btn.style.background = 'var(--primary)';
+                btn.style.color = '#000';
+                btn.style.fontWeight = '700';
+            } else if (btn.textContent.trim().toUpperCase() !== 'REFRESH') {
+                btn.style.background = 'rgba(255,255,255,0.1)';
+                btn.style.color = '#fff';
+                btn.style.fontWeight = '400';
+            }
+        });
+    }
+
+    fetchKasDashboard();
+};
+
+async function fetchKasDashboard(isRefresh = false) {
+    // Gunakan URL terbaru yang Anda berikan
+    const baseUrl = KAS_WEB_APP_URL;
+    if (!baseUrl) return;
+    const tab = getKasActiveTab();
+    const btn = document.getElementById('kas-refresh-btn');
+    const btnTop = document.getElementById('kas-refresh-btn-top');
+    const btnHeader = document.querySelector('#kas-header-actions .btn');
+    const loadingHtml = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
+
+    if (btn) { btn.disabled = true; btn.innerHTML = loadingHtml; }
+    if (btnTop) { btnTop.disabled = true; btnTop.innerHTML = loadingHtml; }
+    if (btnHeader) { btnHeader.disabled = true; btnHeader.innerHTML = loadingHtml; }
+    try {
+        const url = `${baseUrl}?action=getKasDashboard&tab=${encodeURIComponent(tab)}&refresh=${isRefresh}`;
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        const json = await resp.json();
+        if (json.debug) console.log('Kas Debug Info:', json.debug);
+
+        const hasData = json.data && (
+            (json.data.realTimeKas1.headers || []).length > 0 ||
+            (json.data.sesuaiDocKas1.headers || []).length > 0 ||
+            Object.keys(json.data.balance || {}).length > 0
+        );
+
+        if (json.success && json.data && hasData) {
+            renderKasDashboard(json.data);
+            if (btn) showToast('Data Kas diperbarui', 'success');
+        } else {
+            const errMsg = json.error || 'Data ditemukan 0 baris (Cek Layout Sheet)';
+            showToast('Kas Debug: ' + errMsg, 'warning');
+            renderKasDashboard(json.data || null);
+            if (json.debug) {
+                console.warn('DIAGNOSTIK:', json.debug);
+                alert('DIAGNOSA KONEKSI:\n- File: ' + json.debug.spreadsheetName + '\n- Baris dibaca: ' + json.debug.dataRowsRead + '\n- Seksi ditemukan: ' + (json.debug.rtKasFound ? 'RealTime ' : '') + (json.debug.docKasFound ? 'Doc ' : '') + (json.debug.balanceFound ? 'Balance' : 'None') + '\n\nPastikan ID Spreadsheet di CodeKas.gs baris 14 sudah benar!');
+            }
+        }
+    } catch (e) {
+        console.error('Kas fetch error', e);
+        // Pesan error lebih detail untuk debugging
+        showToast('Gagal memuat data: ' + e.message, 'error');
+        renderKasDashboard(null);
+    }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> REFRESH KAS'; }
+    if (btnTop) { btnTop.disabled = false; btnTop.innerHTML = '<i class="fas fa-sync-alt"></i> SYNC SHEET'; }
+    if (btnHeader) { btnHeader.disabled = false; btnHeader.innerHTML = '<i class="fas fa-sync-alt"></i> REFRESH DATA KAS'; }
+}
+
+function renderKasDashboard(data) {
+    const fmt = (v) => (v === undefined || v === null || v === '') ? '-' : String(v);
+    const fmtNum = (v) => {
+        if (v === undefined || v === null || v === '') return '-';
+        let val = String(v).trim();
+
+        // Cek jika angka negatif (dalam kurung misal (1.000) atau dengan tanda minus -1.000)
+        // Regex ini menangkap angka di dalam kurung dan menganggapnya negatif
+        const isNeg = val.startsWith('-') || /^\(.*\)$/.test(val);
+
+        // Bersihkan semua karakter kecuali digit dan simpan satu tanda minus jika isNeg true
+        let numStr = val.replace(/[^\d]/g, ''); // Hapus semua non-digit (termasuk titik/koma pemisah ribuan)
+        let num = parseFloat(numStr);
+
+        if (!isNaN(num)) {
+            if (isNeg) num = -num;
+            // Format IDR yang cantik
+            const formatted = new Intl.NumberFormat('id-ID').format(Math.abs(num));
+            const result = num < 0 ? `(${formatted})` : formatted;
+            const color = num < 0 ? '#ff4757' : 'inherit';
+            return `<span style="color: ${color}; font-weight: ${num < 0 ? '700' : 'inherit'}">${result}</span>`;
+        }
+        return val;
+    };
+
+    if (!data) {
+        document.getElementById('kas-realtime-thead').innerHTML = '<tr><td colspan="10">Isi Sheet Kas di Google Sheet lalu klik REFRESH KAS</td></tr>';
+        document.getElementById('kas-realtime-tbody').innerHTML = '';
+        document.getElementById('kas-realtime-balance').textContent = '-';
+        document.getElementById('kas-balance-kas1').textContent = '-';
+        document.getElementById('kas-doc-thead').innerHTML = '';
+        document.getElementById('kas-doc-tbody').innerHTML = '';
+        ['kas-deposit-list', 'kas-withdraw-list', 'kas-pendingan-list', 'kas-saldo-depo-list', 'kas-saldo-wd-list', 'kas-saldo-ewallet-list'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<li class="kas-list-empty">Data dari Sheet</li>';
+        });
+        var tab = getKasActiveTab();
+        var sheetTitle = document.getElementById('kas-sheet-panel-title');
+        if (sheetTitle) sheetTitle.textContent = 'Data: ' + tab;
+        document.getElementById('kas-sheet-thead').innerHTML = '<tr><th>Kolom</th></tr>';
+        document.getElementById('kas-sheet-tbody').innerHTML = '<tr><td>Buat sheet "' + tab + '" di Google Sheet lalu REFRESH KAS</td></tr>';
+        return;
+    }
+
+    const rt = data.realTimeKas1 || {};
+    const theadRt = document.getElementById('kas-realtime-thead');
+    const tbodyRt = document.getElementById('kas-realtime-tbody');
+    if (rt.headers && rt.headers.length) {
+        theadRt.innerHTML = '<tr>' + rt.headers.map(h => '<th>' + fmt(h) + '</th>').join('') + '</tr>';
+        tbodyRt.innerHTML = (rt.rows || []).map(row =>
+            '<tr>' + row.map((c, idx) => '<td>' + (idx === 0 ? fmt(c) : fmtNum(c)) + '</td>').join('') + '</tr>'
+        ).join('') || '<tr><td colspan="' + rt.headers.length + '">-</td></tr>';
+    } else {
+        theadRt.innerHTML = '<tr><th>TANGGAL</th><th>SALDO AWAL</th><th>HASIL DEPOSIT</th><th>SALDO AKHIR</th><th>SALDO BANK</th></tr>';
+        tbodyRt.innerHTML = '<tr><td colspan="5">Tambah sheet "KasRealTime" di Google Sheet</td></tr>';
+    }
+
+    const parseVal = (v) => {
+        if (!v) return 0;
+        let val = String(v).trim();
+        const isNeg = val.startsWith('-') || /^\(.*\)$/.test(val);
+        let numStr = val.replace(/[^\d]/g, '');
+        let num = parseFloat(numStr) || 0;
+        return isNeg ? -num : num;
+    };
+
+    const bal = data.balance || {};
+    const rbEl = document.getElementById('kas-realtime-balance');
+    const b1El = document.getElementById('kas-balance-kas1');
+    const selEl = document.getElementById('kas-selisih-balance');
+
+    const v1Raw = bal['REAL TIME BALANCE'] ?? bal['REAL TIME BALANCE '] ?? bal['Real Time Balance'];
+    const v2Raw = bal['BALANCE KAS 1'] ?? bal['Balance Kas 1'];
+
+    if (rbEl) rbEl.innerHTML = fmtNum(v1Raw) || '-';
+    if (b1El) b1El.innerHTML = fmtNum(v2Raw) || '-';
+
+    if (selEl) {
+        const val1 = parseVal(v1Raw);
+        const val2 = parseVal(v2Raw);
+        const selisih = val1 - val2;
+        selEl.innerHTML = fmtNum(selisih);
+        // Sesuaikan warna selisih: hijau jika 0, merah jika tidak 0 (asumsi selisih adalah error)
+        selEl.style.color = selisih === 0 ? '#00ff75' : '#ff4757';
+    }
+
+    const doc = data.sesuaiDocKas1 || {};
+    const theadDoc = document.getElementById('kas-doc-thead');
+    const tbodyDoc = document.getElementById('kas-doc-tbody');
+    if (doc.headers && doc.headers.length) {
+        theadDoc.innerHTML = '<tr>' + doc.headers.map(h => '<th>' + fmt(h) + '</th>').join('') + '</tr>';
+        tbodyDoc.innerHTML = (doc.rows || []).map(row =>
+            '<tr>' + row.map((c, idx) => '<td>' + (idx === 0 ? fmt(c) : fmtNum(c)) + '</td>').join('') + '</tr>'
+        ).join('') || '<tr><td colspan="' + doc.headers.length + '">-</td></tr>';
+    } else {
+        theadDoc.innerHTML = '';
+        tbodyDoc.innerHTML = '<tr><td>Tambah sheet "KasDoc" di Google Sheet</td></tr>';
+    }
+
+    // Ekstrak Crosscheck (Status & Labels)
+    const cc = data.crosscheck || {};
+    const theadCc = document.getElementById('kas-crosscheck-thead');
+    const tbodyCc = document.getElementById('kas-crosscheck-tbody');
+    const panelCc = document.getElementById('kas-crosscheck-panel');
+
+    if (cc.labels && cc.labels.length && cc.status && cc.status.length) {
+        if (panelCc) panelCc.style.display = 'block';
+        theadCc.innerHTML = '<tr><th>STATUS (DIFF)</th>' + cc.labels.map(h => '<th>' + fmt(h) + '</th>').join('') + '</tr>';
+
+        tbodyCc.innerHTML = '<tr><td style="font-weight:bold; color:#ffcc00;">HASIL SELISIH</td>' +
+            cc.status.map(val => {
+                // Beri warna khusus untuk hasil selisih
+                let valStr = String(val);
+                let isNeg = valStr.startsWith('-') || valStr.includes('(');
+                let isZero = valStr.trim() === '0' || valStr.trim() === '(0)';
+                let color = isZero ? '#00ff75' : (isNeg ? '#ff4757' : '#00ff75');
+                return `<td style="color:${color}; font-weight:800;">${fmtNum(val)}</td>`;
+            }).join('') + '</tr>';
+    } else {
+        if (panelCc) panelCc.style.display = 'none';
+    }
+
+    function fillList(id, arr) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!arr || !arr.length) { el.innerHTML = '<li class="kas-list-empty">-</li>'; return; }
+        el.innerHTML = arr.map(x => '<li><span class="kas-list-label">' + fmt(x.label) + '</span><span class="kas-list-value">' + fmtNum(x.value) + '</span></li>').join('');
+    }
+    fillList('kas-deposit-list', data.depositBank || data.deposit);
+    fillList('kas-deposit-wallet-list', data.depositWallet);
+    fillList('kas-withdraw-list', data.withdraw);
+    fillList('kas-pendingan-list', data.pendinganBank || data.pendingan);
+    fillList('kas-pendingan-wallet-list', data.pendinganWallet);
+    fillList('kas-saldo-depo-list', data.saldoDepo);
+    fillList('kas-saldo-wd-list', data.saldoWd);
+    fillList('kas-saldo-ewallet-list', data.saldoEwallet);
+
+    const activeTab = data.activeSheetTab || getKasActiveTab();
+    const sheetTable = data.sheetTable || {};
+    const dashboardGrid = document.querySelector('.kas-grid-dashboard');
+    const sheetPanel = document.getElementById('kas-sheet-panel');
+    const summaryEl = document.getElementById('kas-allsaldo-summary');
+
+    if (sheetTitle) sheetTitle.textContent = 'Data: ' + activeTab;
+
+    // TAMPILKAN GRID HANYA DI TAB DASHBOARD
+    if (activeTab === 'DASHBOARD') {
+        if (dashboardGrid) dashboardGrid.style.display = 'grid';
+        if (sheetPanel) sheetPanel.style.display = 'none';
+        if (summaryEl) summaryEl.style.display = 'none';
+    } else {
+        if (dashboardGrid) dashboardGrid.style.display = 'none';
+        if (sheetPanel) sheetPanel.style.display = 'block';
+
+        // Tampilkan ringkasan (kartu) terutama untuk ALL SALDO
+        if (summaryEl) {
+            if (sheetTable.summary && Object.keys(sheetTable.summary).length > 0) {
+                var keys = Object.keys(sheetTable.summary);
+                var cards = keys.map(function (k) {
+                    var v = sheetTable.summary[k];
+                    var val = (v === undefined || v === null) ? '-' : String(v);
+                    // Gunakan fmtNum untuk konsistensi warna
+                    return '<div class="kas-summary-card"><span class="kas-summary-label">' + fmt(k) + '</span><span class="kas-summary-value">' + fmtNum(val) + '</span></div>';
+                });
+                summaryEl.innerHTML = '<div class="kas-summary-row">' + cards.join('') + '</div>';
+                summaryEl.style.display = '';
+            } else {
+                summaryEl.innerHTML = '';
+                summaryEl.style.display = 'none';
+            }
+        }
+    }
+
+    // Tampilkan data TABEL UTAMA (Selama bukan Dashboard)
+    var sheetThead = document.getElementById('kas-sheet-thead');
+    var sheetTbody = document.getElementById('kas-sheet-tbody');
+    var sheetContainer = document.querySelector('.kas-sheet-table-wrapper');
+    if (!sheetContainer) return;
+
+    // JIKA ADA BLOCKS (Format ALL SALDO Horizontal)
+    const blocksContainer = document.getElementById('kas-blocks-container');
+    if (sheetTable.blocks && sheetTable.blocks.length > 0) {
+        let html = '';
+        sheetTable.blocks.forEach(block => {
+            html += `<div class="kas-horizontal-block" style="margin-bottom: 25px; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                <div style="padding: 12px 20px; background: rgba(255,255,255,0.05); font-weight: 800; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.95rem;">
+                    ${block.title}
+                </div>
+                <div style="overflow-x: auto; padding: 10px;">
+                    <table class="kas-table" style="width: auto; min-width: 350px; border-collapse: collapse; margin-bottom: 5px;">
+                        <thead>
+                            <tr style="background: rgba(0,0,0,0.3);">
+                                <th style="width: 80px; text-align: center; color: #888; font-size: 0.7rem; border-right: 1px solid rgba(255,255,255,0.05);">LABEL</th>
+                                ${block.headers.map(h => `<th style="min-width: 150px; text-align: center; color: #fff; font-size: 0.7rem; padding: 10px; line-height: 1.3;">${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center; font-weight: bold; background: #fbbf24; color: #000; font-size: 0.75rem; border-right: 1px solid rgba(255,255,255,0.05);">DOC</td>
+                                ${block.doc.map(v => `<td style="text-align: center; font-weight: 600; font-size: 0.85rem;">${fmtNum(v)}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td style="text-align: center; font-weight: bold; background: #34d399; color: #000; font-size: 0.75rem; border-right: 1px solid rgba(255,255,255,0.05);">KAS</td>
+                                ${block.kas.map(v => `<td style="text-align: center; font-weight: 600; font-size: 0.85rem;">${fmtNum(v)}</td>`).join('')}
+                            </tr>
+                            <tr style="border-top: 1px solid rgba(255,255,255,0.2);">
+                                <td style="text-align: center; font-weight: bold; background: #6b7280; color: #fff; font-size: 0.75rem; border-right: 1px solid rgba(255,255,255,0.05);">HASIL</td>
+                                ${block.hasil.map(v => {
+                const numStr = String(v || "0").replace(/[^0-9.-]/g, '');
+                const num = parseFloat(numStr) || 0;
+                const isZero = (num === 0);
+                const bgColor = isZero ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+                const textColor = isZero ? '#34d399' : '#f87171';
+                return `<td style="text-align: center; font-weight: 800; font-size: 0.85rem; color: ${textColor}; background: ${bgColor};">${fmtNum(v)}</td>`;
+            }).join('')}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+        });
+
+        if (blocksContainer) {
+            blocksContainer.innerHTML = html;
+            blocksContainer.style.display = 'block';
+        }
+        sheetContainer.style.display = 'none'; // Sembunyikan tabel standar
+        return;
+    }
+
+    // Reset container blocks jika tab lain
+    if (blocksContainer) {
+        blocksContainer.innerHTML = '';
+        blocksContainer.style.display = 'none';
+    }
+    sheetContainer.style.display = 'block';
+
+    if (sheetTable.headers && sheetTable.headers.length) {
+        // Filter Kolom Kosong: Hanya tampilkan kolom yang memiliki data di minimal satu baris
+        const validColIndices = sheetTable.headers.map((h, idx) => {
+            // Cek apakah header atau salah satu cell di kolom ini ada isinya
+            const hasHeader = h && String(h).trim() !== '';
+            const hasData = (sheetTable.rows || []).some(row => row[idx] && String(row[idx]).trim() !== '' && String(row[idx]).trim() !== '-');
+            return (hasHeader || hasData) ? idx : -1;
+        }).filter(idx => idx !== -1);
+
+        if (validColIndices.length > 0) {
+            sheetThead.innerHTML = '<tr>' + validColIndices.map(idx => '<th>' + fmt(sheetTable.headers[idx]) + '</th>').join('') + '</tr>';
+            sheetTbody.innerHTML = (sheetTable.rows || []).map(row => {
+                // Cek apakah baris ini benar-benar kosong setelah difilter
+                const hasValue = validColIndices.some(idx => row[idx] && String(row[idx]).trim() !== '' && String(row[idx]).trim() !== '-');
+                if (!hasValue) return ''; // Skip baris kosong
+                return '<tr>' + validColIndices.map(idx => '<td>' + fmtNum(row[idx]) + '</td>').join('') + '</tr>';
+            }).join('') || '<tr><td colspan="' + validColIndices.length + '">Tidak ada data transaksi.</td></tr>';
+        } else {
+            sheetThead.innerHTML = '<tr><th>INFO</th></tr>';
+            sheetTbody.innerHTML = '<tr><td>Sheet ini tidak memiliki data kolom yang valid.</td></tr>';
+        }
+    } else if (activeTab !== 'DASHBOARD') {
+        sheetThead.innerHTML = '<tr><th>INFO</th></tr>';
+        sheetTbody.innerHTML = '<tr><td>Data di sheet "' + activeTab + '" kosong atau belum terisi.</td></tr>';
+    }
+}
+
+function setupKasTabs() {
+    document.querySelectorAll('.kas-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.kas-tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+            tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
+            fetchKasDashboard();
+        });
+    });
 }
 
 document.getElementById('extension-form').addEventListener('submit', async (e) => {
@@ -372,6 +729,8 @@ document.getElementById('extension-form').addEventListener('submit', async (e) =
     };
 });
 
+
+
 // --- Navigation ---
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
@@ -387,8 +746,20 @@ function setupNavigation() {
             document.getElementById('page-title').textContent = link.querySelector('span').textContent;
             document.getElementById('add-extension-btn').style.display = target === 'extensions-section' ? 'flex' : 'none';
             document.getElementById('notes-actions').style.display = target === 'notes-section' ? 'flex' : 'none';
+            const kasHeaderActions = document.getElementById('kas-header-actions');
+            if (kasHeaderActions) kasHeaderActions.style.display = target === 'kas-section' ? 'flex' : 'none';
+
+            if (target === 'kas-section') fetchKasDashboard();
         });
     });
+
+    const kasRefreshBtn = document.getElementById('kas-refresh-btn');
+    const kasRefreshBtnTop = document.getElementById('kas-refresh-btn-top');
+    const kasHeaderBtn = document.querySelector('#kas-header-actions .btn');
+
+    if (kasRefreshBtn) kasRefreshBtn.addEventListener('click', () => fetchKasDashboard(true)); // Manual Refresh = Force
+    if (kasRefreshBtnTop) kasRefreshBtnTop.addEventListener('click', () => fetchKasDashboard(true));
+    if (kasHeaderBtn) kasHeaderBtn.addEventListener('click', () => fetchKasDashboard(true));
 
     document.getElementById('add-note-btn').addEventListener('click', () => {
         document.getElementById('note-modal-title').textContent = 'New Note';
