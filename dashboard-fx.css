@@ -1,0 +1,16 @@
+/* Dashboard Red Effect Canvas */
+#dashboard-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    /* On top of everything */
+    pointer-events: none;
+    /* Let clicks pass through */
+    mix-blend-mode: screen;
+    /* Cool blending */
+}
+
+/* Update */

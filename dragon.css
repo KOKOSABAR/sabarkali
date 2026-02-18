@@ -1,0 +1,59 @@
+/* Dragon Animation */
+#dragon-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+    /* Below login form */
+    pointer-events: none;
+}
+
+.dragon-segment {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #ffcc00, #ff4500);
+    box-shadow: 0 0 15px #ff4500, 0 0 30px #ffcc00;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    will-change: transform, left, top;
+}
+
+/* Head Style - Actual Dragon Head Shape via CSS/SVG mask or background */
+.dragon-head {
+    width: 60px !important;
+    height: 60px !important;
+    background: linear-gradient(135deg, #ffd700, #ff4500);
+    /* Simple Dragon Head Shape using clip-path */
+    clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+    /* Replaced generic circle with a more interesting shape placeholder if SVG fails, 
+        but we will inject SVG in JS for better look */
+    background: none !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.dragon-head svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px #ff4500);
+    fill: #ffd700;
+}
+
+/* Body Scales */
+.dragon-segment:not(.dragon-head) {
+    /* Scale shape */
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(45deg, #ffcc00, #ff0000);
+    opacity: 0.8;
+}
+
+.dragon-segment:nth-child(even) {
+    transform: translate(-50%, -50%) scale(0.8);
+}

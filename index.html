@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Hub | Auto-Cloud Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Parlay Calculator Styling */
+        .parlay-global-controls {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .parlay-summary {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .p-summ-box {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .p-summ-box.highlight {
+            background: linear-gradient(135deg, rgba(255, 204, 0, 0.1), rgba(255, 107, 129, 0.1));
+            border-color: #ffcc00;
+        }
+
+        .p-summ-box span {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .p-summ-box .val {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .p-summ-box.highlight .val {
+            color: #ffcc00;
+        }
+
+        .parlay-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .parlay-matches-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 5px;
+            margin-bottom: 20px;
+        }
+
+        .parlay-match-item {
+            background: #252525;
+            border-left: 4px solid #ffcc00;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+        }
+
+        .match-header h4 {
+            color: #ffcc00;
+            margin: 0;
+        }
+
+        .match-content {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .match-odds-input {
+            width: 100px;
+            background: #000 !important;
+            border: 1px solid #444 !important;
+            color: #00ff75 !important;
+            font-weight: 700;
+            text-align: center;
+            padding: 8px !important;
+        }
+
+        .match-status-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .match-status-options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #ccc;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 50px;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .match-status-options label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .match-status-options input[type="radio"] {
+            accent-color: #ffcc00;
+            width: 16px;
+            height: 16px;
+        }
+
+        .match-status-options label:has(input:checked) {
+            background: rgba(255, 204, 0, 0.1);
+            border-color: #ffcc00;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        .parlay-notes {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #444;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .parlay-notes small {
+            display: block;
+        }
+
+        .parlay-notes strong {
+            color: #aaa;
+        }
+
+        /* Split Layout Adjustments for Parlay */
+        .admin-input-side .parlay-global-controls {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .admin-input-side .parlay-summary {
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .admin-input-side .p-summ-box {
+            max-width: 100%;
+            width: 100%;
+            padding: 12px;
+        }
+
+        .parlay-formula-note {
+            background: rgba(255, 204, 0, 0.05);
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #ccc;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .parlay-formula-note h3 {
+            color: #ffcc00;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .parlay-formula-note p {
+            margin-bottom: 8px;
+        }
+
+        .parlay-formula-note .formula-highlight {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #ffcc00;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            color: #00ff75;
+            font-weight: bold;
+        }
+
+        .p-lcd-input {
+            background: transparent;
+            border: none;
+            color: #ffcc00;
+            text-align: center;
+            width: 100%;
+            font-family: monospace;
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        .p-lcd-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+    <link rel="stylesheet" href="luxury.css">
+    <script src="luxury.js" defer></script>
+    <link rel="stylesheet" href="dashboard-fx.css">
+    <script src="dashboard-fx.js" defer></script>
+</head>
+
+<body class="login-pending">
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div id="luxury-container"></div>
+        <div class="login-container">
+            <div class="login-box">
+                <form class="form" id="login-form">
+                    <div class="logo">
+                        <img src="assets/logo.png" alt="Logo" class="logo-img">
+                    </div>
+                    <p class="header">LOGIN DULU NAPA</p>
+                    <input autocomplete="off" placeholder="Username" class="input" type="text" id="login-username"
+                        required>
+                    <input placeholder="Key / Password" class="input" type="password" id="login-password" required>
+                    <button type="submit" class="button sign-in">Login</button>
+                    <div class="login-motto">
+                        <p>RAJINLAH BEKERJA, KURANGI BICARA</p>
+                        <p>SEDERHANA DALAM BERGAYA</p>
+                        <p>INGAT PEPATAH CINA</p>
+                        <p class="quote">"ME YOU CIEN ME YOU YOUNG"</p>
+                        <p class="sub">(TANPA UANG KITA TIDAK ADA GUNA)</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-app">
+        <div class="background-blobs">
+            <div class="cyber-grid"></div>
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+
+        <!-- Sidebar Layout -->
+        <div class="app-layout">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-bolt"></i>
+                    <span>SABAR KALI</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-link active" data-target="extensions-section">
+                        <i class="fas fa-file-archive"></i>
+                        <span>Extensions</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="notes-section">
+                        <i class="fas fa-table"></i>
+                        <span>Notes Manager</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="shortcut-section">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>SHORTCUT</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="kas-section">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Kas / Real Time</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="togel-section">
+                        <i class="fas fa-dice"></i>
+                        <span>TOGEL</span>
+                    </a>
+
+                    <a href="#" class="nav-link" data-target="jadwal-bola-section">
+                        <i class="fas fa-futbol"></i>
+                        <span>JADWAL BOLA</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="cek-rekening-section">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>CEK DATA REKENING</span>
+                    </a>
+                    <a href="#" class="nav-link" data-target="galeri-section">
+                        <i class="fas fa-images"></i>
+                        <span>GALERI</span>
+                    </a>
+
+                    <a href="#" class="nav-link" data-target="alien-command-section">
+                        <i class="fas fa-user-secret"></i>
+                        <span>CALCULATOR FREE & BUY SPIN</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="status-badge">
+                        <div class="status-dot"></div>
+                        <span>Cloud Sync Active</span>
+                    </div>
+                    <div class="nav-time" id="current-time" style="margin-bottom: 1.5rem;">00:00:00</div>
+                    <button class="btn btn-danger" onclick="handleLogout()"
+                        style="width: 100%; height: 2.8rem; font-size: 0.8rem;">
+                        <i class="fas fa-sign-out-alt"></i> LOGOUT
+                    </button>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <header class="top-bar">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <h1 id="page-title">Extensions</h1>
+                        <div id="kas-header-actions"
+                            style="display: none; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                            <button class="btn" onclick="fetchKasDashboard()"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: var(--primary); color: #000; font-weight: 700;">
+                                <i class="fas fa-sync-alt"></i> REFRESH
+                            </button>
+                            <button class="btn" onclick="switchKasTo('DASHBOARD')"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: var(--primary); color: #000; font-weight: 700;">
+                                DASHBOARD
+                            </button>
+                            <button class="btn" onclick="switchKasTo('ALL SALDO')"
+                                style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                ALL SALDO
+                            </button>
+                        </div>
+                    </div>
+                    <div class="top-actions">
+                        <button id="add-extension-btn" class="btn" type="button" style="height: 3rem; width: 11rem;">
+                            <i class="fas fa-upload"></i> Upload ZIP
+                        </button>
+                        <div id="notes-actions" style="display: none; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <div id="category-pills" class="category-pills-container">
+                                <!-- Category buttons will be injected here -->
+                            </div>
+                            <button id="add-note-btn" class="btn" type="button"
+                                style="height: 3rem; width: 11rem; flex-shrink: 0;">
+                                <i class="fas fa-plus"></i> New Note
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="container">
+                    <!-- Extensions Section -->
+                    <section class="section section-content active" id="extensions-section">
+                        <div class="grid" id="extension-grid">
+                            <div class="loading-state">
+                                <div class="main-container">
+                                    <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354.3 194.5">
+                                        <g class="traces">
+                                            <path class="trace-bg"
+                                                d="M211.7,113.8h110c12.1,0,22-9.8,22-22s-9.8-22-22-22h-110"></path>
+                                            <path class="trace-flow blue"
+                                                d="M211.7,113.8h110c12.1,0,22-9.8,22-22s-9.8-22-22-22h-110"></path>
+                                            <path class="trace-bg"
+                                                d="M142.6,113.8h-110c-12.1,0-22-9.8-22-22s9.8-22,22-22h110"></path>
+                                            <path class="trace-flow yellow"
+                                                d="M142.6,113.8h-110c-12.1,0-22-9.8-22-22s9.8-22,22-22h110"></path>
+                                            <path class="trace-bg"
+                                                d="M177.1,69.8v-40c0-12.1,9.8-22,22-22s22,9.8,22,22v40">
+                                            </path>
+                                            <path class="trace-flow green"
+                                                d="M177.1,69.8v-40c0-12.1,9.8-22,22-22s22,9.8,22,22v40"></path>
+                                            <path class="trace-bg"
+                                                d="M177.1,124.7v40c0,12.1-9.8,22-22,22s-22-9.8-22-22v-40"></path>
+                                            <path class="trace-flow purple"
+                                                d="M177.1,124.7v40c0,12.1-9.8,22-22,22s-22-9.8-22-22v-40"></path>
+                                        </g>
+                                        <g class="pins">
+                                            <rect class="chip-pin" x="149.6" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="156.9" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="164.1" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="171.3" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="178.6" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="185.8" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="193" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="200.3" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="149.6" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="156.9" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="164.1" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="171.3" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="178.6" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="185.8" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="193" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="200.3" y="113.6" width="2.4" height="4.8"></rect>
+                                        </g>
+                                        <rect class="chip-body" x="144.6" y="80.1" width="65.1" height="34.3"
+                                            fill="#222">
+                                        </rect>
+                                        <text class="chip-text" x="177" y="101" fill="#444" text-anchor="middle"
+                                            font-family="Arial" font-size="10">SABAR YA</text>
+                                    </svg>
+                                </div>
+                                <p>Connecting to Cloud...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Notes Section -->
+                    <section class="section section-content" id="notes-section">
+                        <div class="grid" id="notes-grid">
+                            <div class="loading-state">
+                                <div class="main-container">
+                                    <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354.3 194.5">
+                                        <g class="traces">
+                                            <path class="trace-bg"
+                                                d="M211.7,113.8h110c12.1,0,22-9.8,22-22s-9.8-22-22-22h-110"></path>
+                                            <path class="trace-flow blue"
+                                                d="M211.7,113.8h110c12.1,0,22-9.8,22-22s-9.8-22-22-22h-110"></path>
+                                            <path class="trace-bg"
+                                                d="M142.6,113.8h-110c-12.1,0-22-9.8-22-22s9.8-22,22-22h110"></path>
+                                            <path class="trace-flow yellow"
+                                                d="M142.6,113.8h-110c-12.1,0-22-9.8-22-22s9.8-22,22-22h110"></path>
+                                            <path class="trace-bg"
+                                                d="M177.1,69.8v-40c0-12.1,9.8-22,22-22s22,9.8,22,22v40">
+                                            </path>
+                                            <path class="trace-flow green"
+                                                d="M177.1,69.8v-40c0-12.1,9.8-22,22-22s22,9.8,22,22v40"></path>
+                                            <path class="trace-bg"
+                                                d="M177.1,124.7v40c0,12.1-9.8,22-22,22s-22-9.8-22-22v-40"></path>
+                                            <path class="trace-flow purple"
+                                                d="M177.1,124.7v40c0,12.1-9.8,22-22,22s-22-9.8-22-22v-40"></path>
+                                        </g>
+                                        <g class="pins">
+                                            <rect class="chip-pin" x="149.6" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="156.9" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="164.1" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="171.3" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="178.6" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="185.8" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="193" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="200.3" y="76.1" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="149.6" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="156.9" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="164.1" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="171.3" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="178.6" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="185.8" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="193" y="113.6" width="2.4" height="4.8"></rect>
+                                            <rect class="chip-pin" x="200.3" y="113.6" width="2.4" height="4.8"></rect>
+                                        </g>
+                                        <rect class="chip-body" x="144.6" y="80.1" width="65.1" height="34.3"
+                                            fill="#222">
+                                        </rect>
+                                        <text class="chip-text" x="177" y="101" fill="#444" text-anchor="middle"
+                                            font-family="Arial" font-size="10">SABAR YA</text>
+                                    </svg>
+                                </div>
+                                <p>Loading Workspace...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Shortcut Section -->
+                    <section class="section section-content" id="shortcut-section">
+                        <div class="shortcut-tool-container">
+                            <!-- Category Navigator -->
+                            <div class="category-nav">
+                                <button class="cat-btn active" onclick="switchShortcutCategory('tarik-manual', this)">
+                                    <i class="fas fa-robot"></i> TARIK MANUAL WD POWER
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('tarik-manual-wd', this)">
+                                    <i class="fas fa-file-invoice-dollar"></i> TARIK MANUAL WD ADMIN
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('bagi-nominal', this)">
+                                    <i class="fas fa-hand-holding-usd"></i> BAGI NOMINAL WD
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('klikbca', this)">
+                                    <i class="fas fa-university"></i> KLIKBCA
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('mybca', this)">
+                                    <i class="fas fa-mobile-alt"></i> MYBCA
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('btm-wd', this)">
+                                    <i class="fas fa-search-dollar"></i> CEK BTM WD
+                                </button>
+                                <button class="cat-btn" onclick="switchShortcutCategory('parlay-calc', this)">
+                                    <i class="fas fa-calculator"></i> KALKULATOR PARLAY
+                                </button>
+
+                            </div>
+
+                            <!-- Content wrapper for Tarik Manual -->
+                            <div id="cat-tarik-manual" class="shortcut-cat-content active">
+                                <div class="tool-header">
+                                    <i class="fas fa-robot"></i>
+                                    <h2>TARIK MANUAL DARI ROBOT</h2>
+                                </div>
+
+                                <!-- Bank Section -->
+                                <div class="tool-card bank-card">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-university"></i> SHORTCUT UNTUK TARIK WD BANK
+                                    </div>
+                                    <div class="input-area">
+                                        <label><i class="fas fa-paste"></i> TEMPEL DI BAWAH INI (PAKAI
+                                            CTRL+SHIFT+V)</label>
+                                        <textarea id="bank-input"
+                                            placeholder="Paste data bank dari robot di sini..."></textarea>
+                                    </div>
+                                    <div class="result-area">
+                                        <label><i class="fas fa-copy"></i> COPY YANG DI BAWAH INI</label>
+                                        <div class="table-scroll">
+                                            <table id="bank-result-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>BANK</th>
+                                                        <th>NOMOR REKENING</th>
+                                                        <th>USER ID</th>
+                                                        <th>NAMA REKENING</th>
+                                                        <th>NOMINAL WD</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="bank-result-body"></tbody>
+                                            </table>
+                                        </div>
+                                        <div
+                                            style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
+                                            <button class="btn" onclick="copyTable('bank-result-table')"
+                                                style="height: 3rem; width: 220px;">
+                                                <i class="fas fa-copy"></i> COPY TABLE BANK
+                                            </button>
+                                            <button class="btn btn-danger" onclick="clearRobotTool('bank')"
+                                                style="height: 3rem; width: 120px;">
+                                                <i class="fas fa-trash-alt"></i> CLEAR
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- E-Wallet Section -->
+                                <div class="tool-card wallet-card" style="margin-top: 30px;">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-wallet"></i> SHORTCUT UNTUK TARIK WD E-WALLET
+                                    </div>
+                                    <div class="wallet-icons">
+                                        <span style="color: #008dee; font-weight: 800;"><i class="fas fa-wallet"></i>
+                                            DANA</span>
+                                        <span style="color: #8c00ff; font-weight: 800;"><i
+                                                class="fas fa-mobile-alt"></i>
+                                            OVO</span>
+                                        <span style="color: #00aa13; font-weight: 800;"><i
+                                                class="fas fa-motorcycle"></i>
+                                            GOPAY</span>
+                                        <span style="color: #ff3c00; font-weight: 800;"><i class="fas fa-link"></i> Link
+                                            Aja!</span>
+                                    </div>
+                                    <div class="input-area">
+                                        <label><i class="fas fa-paste"></i> TEMPEL DI BAWAH INI (PAKAI
+                                            CTRL+SHIFT+V)</label>
+                                        <textarea id="wallet-input"
+                                            placeholder="Paste data e-wallet dari robot di sini..."></textarea>
+                                    </div>
+                                    <div class="result-area">
+                                        <label><i class="fas fa-copy"></i> COPY YANG DI BAWAH INI</label>
+                                        <div class="table-scroll">
+                                            <table id="wallet-result-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>BANK</th>
+                                                        <th>NOMOR REKENING</th>
+                                                        <th>USER ID</th>
+                                                        <th>NAMA REKENING</th>
+                                                        <th>NOMINAL WD</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="wallet-result-body"></tbody>
+                                            </table>
+                                        </div>
+                                        <div
+                                            style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
+                                            <button class="btn" onclick="copyTable('wallet-result-table')"
+                                                style="height: 3rem; width: 220px;">
+                                                <i class="fas fa-copy"></i> COPY TABLE E-WALLET
+                                            </button>
+                                            <button class="btn btn-danger" onclick="clearRobotTool('wallet')"
+                                                style="height: 3rem; width: 120px;">
+                                                <i class="fas fa-trash-alt"></i> CLEAR
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for Tarik Manual WD (Admin Copy) -->
+                            <div id="cat-tarik-manual-wd" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <h2>TARIK MANUAL WD DARI ADMIN</h2>
+                                </div>
+
+                                <div class="tool-card admin-wd-card">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-exchange-alt"></i> COPY ADMIN &rarr; CTRL+V KESINI &rarr;
+                                        OTOMATIS
+                                        JADI TABEL
+                                    </div>
+
+                                    <div
+                                        style="display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;">
+                                        <button class="btn" onclick="copyTable('admin-wd-table')"
+                                            style="height: 3rem; width: 220px;">
+                                            <i class="fas fa-copy"></i> COPY HASIL TABEL
+                                        </button>
+                                        <button class="btn btn-danger" onclick="clearAdminWD()"
+                                            style="height: 3rem; width: 120px;">
+                                            <i class="fas fa-trash-alt"></i> CLEAR
+                                        </button>
+                                    </div>
+
+                                    <div class="admin-split-layout">
+                                        <div class="admin-input-side">
+                                            <label><i class="fas fa-paste"></i> TEMPEL DATA ADMIN (CTRL+V)</label>
+                                            <textarea id="admin-wd-input"
+                                                placeholder="Paste data withdraw dari admin di sini..."
+                                                oninput="processAdminWD()"></textarea>
+                                        </div>
+
+                                        <div class="admin-output-side">
+                                            <label><i class="fas fa-table"></i> HASIL EKSTRAKSI</label>
+                                            <div class="table-scroll">
+                                                <table id="admin-wd-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>TUJUAN</th>
+                                                            <th>NOMOR REKENING</th>
+                                                            <th>USER ID</th>
+                                                            <th>NAMA REKENING</th>
+                                                            <th>NOMINAL WD</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="admin-wd-body">
+                                                        <!-- Dynamic Data -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for Bagi Nominal -->
+                            <div id="cat-bagi-nominal" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                    <h2>BAGI NOMINAL WD BESAR</h2>
+                                </div>
+
+                                <!-- WD Split Section -->
+                                <div class="tool-card split-card"
+                                    style="min-height: auto; max-width: 600px; margin: 0 auto;">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-hand-holding-usd"></i> SPLIT WD CALCULATOR
+                                    </div>
+
+                                    <div
+                                        style="display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;">
+                                        <button class="btn" onclick="copyAllSplitResults()"
+                                            style="height: 3rem; width: 220px;">
+                                            <i class="fas fa-copy"></i> COPY SEMUA HASIL
+                                        </button>
+                                        <button class="btn btn-danger" onclick="clearSplitTool()"
+                                            style="height: 3rem; width: 120px;">
+                                            <i class="fas fa-trash-alt"></i> CLEAR
+                                        </button>
+                                    </div>
+
+                                    <div class="split-tool-wrapper">
+                                        <div class="split-header">
+                                            MASUKAN NOMINAL WITHDRAW MEMBER
+                                        </div>
+                                        <div class="split-input-container">
+                                            <input type="text" id="wd-total-input" placeholder="0"
+                                                oninput="formatAndSplitWD(this)">
+                                        </div>
+
+                                        <div class="split-results" id="wd-split-results">
+                                            <!-- Dynamic rows will look like this -->
+                                            <div class="split-row empty">
+                                                <div class="copy-side left">COPY INI<br> >> </div>
+                                                <div class="split-value">0</div>
+                                                <div class="copy-side right">
+                                                    << <br>COPY INI
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="split-footer" id="wd-split-footer">
+                                            0
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for KlikBCA Deposit -->
+                            <div id="cat-klikbca" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-university"></i>
+                                    <h2>DEPOSIT MANUAL KLIKBCA</h2>
+                                </div>
+
+                                <div class="tool-card klikbca-card">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-list-alt"></i> COPY MUTASI KLIKBCA &rarr; CTRL+V KESINI &rarr;
+                                        AMBIL NAMA & NOMINAL
+                                    </div>
+
+                                    <div
+                                        style="display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;">
+                                        <button class="btn" onclick="copyTable('klikbca-table')"
+                                            style="height: 3rem; width: 220px;">
+                                            <i class="fas fa-copy"></i> COPY HASIL TABEL
+                                        </button>
+                                        <button class="btn btn-danger" onclick="clearKlikBCA()"
+                                            style="height: 3rem; width: 120px;">
+                                            <i class="fas fa-trash-alt"></i> CLEAR
+                                        </button>
+                                    </div>
+
+                                    <div class="admin-split-layout">
+                                        <div class="admin-input-side">
+                                            <label><i class="fas fa-paste"></i> TEMPEL DATA KLIKBCA (CTRL+V)</label>
+                                            <textarea id="klikbca-input" placeholder="Paste mutasi KlikBCA di sini..."
+                                                style="height: 450px;" oninput="processKlikBCA()"></textarea>
+                                        </div>
+
+                                        <div class="admin-output-side">
+                                            <label><i class="fas fa-file-export"></i> HASIL EKSTRAKSI</label>
+                                            <div class="table-scroll">
+                                                <table id="klikbca-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 70%;">NAMA MUTASI</th>
+                                                            <th style="width: 30%;">NOMINAL</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="klikbca-body">
+                                                        <!-- Dynamic Data -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for MyBCA Deposit -->
+                            <div id="cat-mybca" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <h2>DEPOSIT MANUAL MYBCA</h2>
+                                </div>
+
+                                <div class="tool-card mybca-card">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-list-alt"></i> COPY MUTASI MYBCA &rarr; CTRL+V KESINI
+                                        &rarr; AMBIL
+                                        NAMA & NOMINAL
+                                    </div>
+
+                                    <div
+                                        style="display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;">
+                                        <button class="btn" onclick="copyTable('mybca-table')"
+                                            style="height: 3rem; width: 220px;">
+                                            <i class="fas fa-copy"></i> COPY HASIL TABEL
+                                        </button>
+                                        <button class="btn btn-danger" onclick="clearMyBCA()"
+                                            style="height: 3rem; width: 120px;">
+                                            <i class="fas fa-trash-alt"></i> CLEAR
+                                        </button>
+                                    </div>
+
+                                    <div class="admin-split-layout">
+                                        <div class="admin-input-side">
+                                            <label><i class="fas fa-paste"></i> TEMPEL DATA MYBCA (CTRL+V)</label>
+                                            <textarea id="mybca-input" placeholder="Paste mutasi MyBCA di sini..."
+                                                style="height: 450px;" oninput="processMyBCA()"></textarea>
+                                        </div>
+
+                                        <div class="admin-output-side">
+                                            <label><i class="fas fa-file-export"></i> HASIL EKSTRAKSI</label>
+                                            <div class="table-scroll">
+                                                <table id="mybca-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 70%;">NAMA REKENING</th>
+                                                            <th style="width: 30%;">JUMLAH</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="mybca-body">
+                                                        <!-- Dynamic Data -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for CEK BTM WD -->
+                            <div id="cat-btm-wd" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-search-dollar"></i>
+                                    <h2>CEK BTM WD (DEBET CHECKER)</h2>
+                                </div>
+
+                                <div class="tool-card btm-wd-card">
+                                    <div class="btm-result-header" id="btm-status-banner" style="display: none;">
+                                        <div class="btm-banner-top">SUDAH CAPAI TURNOVER 'PROSES'</div>
+                                        <div class="btm-banner-bottom">
+                                            <div class="btm-user">TOTAL</div>
+                                            <div class="btm-total" id="btm-total-display">RP0</div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        style="display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;">
+                                        <button class="btn" onclick="copyTable('btm-wd-table')"
+                                            style="height: 3rem; width: 220px;">
+                                            <i class="fas fa-copy"></i> COPY HASIL TABEL
+                                        </button>
+                                        <button class="btn btn-danger" onclick="clearBTM()"
+                                            style="height: 3rem; width: 120px;">
+                                            <i class="fas fa-trash-alt"></i> CLEAR
+                                        </button>
+                                    </div>
+
+                                    <div class="btm-input-area" style="margin-bottom: 25px;">
+                                        <label><i class="fas fa-paste"></i> TEMPEL DATA BTM (CTRL+V)</label>
+                                        <textarea id="btm-wd-input" placeholder="Tempel data BTM di sini..."
+                                            style="height: 120px; width: 100%; background: #000; color: #00ff00; border: 1px solid #333; padding: 10px; font-family: monospace;"
+                                            oninput="processBTM()"></textarea>
+                                    </div>
+
+                                    <div class="btm-output-area">
+                                        <label><i class="fas fa-list"></i> HASIL PENGECEKAN</label>
+                                        <div class="table-scroll" style="max-height: 600px;">
+                                            <table id="btm-wd-table" class="btm-full-table" style="width: 100%;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>No</th>
+                                                        <th>Periode</th>
+                                                        <th>Date</th>
+                                                        <th>Keterangan</th>
+                                                        <th>Keterangan ID</th>
+                                                        <th>Status</th>
+                                                        <th class="col-debet">Debet</th>
+                                                        <th>Kredit</th>
+                                                        <th>Balance</th>
+                                                        <th>Via</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="btm-wd-body">
+                                                    <!-- Dynamic Data -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content wrapper for Calculator Parlay -->
+                            <div id="cat-parlay-calc" class="shortcut-cat-content">
+                                <div class="tool-header">
+                                    <i class="fas fa-calculator"></i>
+                                    <h2>CALCULATOR MIX PARLAY</h2>
+                                </div>
+
+                                <div class="tool-card parlay-card">
+                                    <div class="tool-sub-header gold-text">
+                                        <i class="fas fa-list-ol"></i> HITUNG PARLAY OTOMATIS (MENANG 1/2, KALAH 1/2)
+                                    </div>
+
+                                    <div class="admin-split-layout">
+                                        <!-- SISI KIRI: INPUT & RINGKASAN -->
+                                        <div class="admin-input-side">
+                                            <div class="parlay-global-controls">
+                                                <div class="form-group" style="width: 100%;">
+                                                    <label>NILAI BET (IDR)</label>
+                                                    <input type="text" id="parlay-bet-input" placeholder="Contoh: 10000"
+                                                        oninput="calculateParlay()">
+                                                </div>
+                                                <div class="parlay-summary">
+                                                    <div class="p-summ-box">
+                                                        <span>TOTAL ODDS</span>
+                                                        <div id="parlay-total-odds" class="val">1.000</div>
+                                                    </div>
+                                                    <div class="p-summ-box">
+                                                        <span>HASIL AKHIR (TANPA MODAL)</span>
+                                                        <div id="parlay-net-win" class="val">IDR 0</div>
+                                                    </div>
+                                                    <div class="p-summ-box highlight">
+                                                        <span>HASIL AKHIR (WIN + MODAL)</span>
+                                                        <div id="parlay-payout" class="val">IDR 0</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="parlay-formula-note" style="margin-top: 0;">
+                                                <h3><i class="fas fa-info-circle"></i> Catatan:</h3>
+                                                <p>• Jika menang full, hitungan nya akan menjadi sama dengan Odds</p>
+                                                <p>• Jika menang setengah, hitungan nya (Odds-1)/2 +1</p>
+                                                <p>• Jika kalah setengah, hitungan nya menjadi tetap 0.5</p>
+                                                <p>• Jika seri, hitungan nya akan menjadi tetap 1 atau tidak dihitung
+                                                </p>
+
+                                                <div class="formula-highlight">
+                                                    Rumus Mix Parlay = (Hasil Perkalian Odds x Jumlah Betting) - Jumlah
+                                                    Betting
+                                                </div>
+
+                                                <p><i class="fas fa-caret-right"></i> Jika hasil minus, Anda kalah
+                                                    sejumlah
+                                                    hasil yang dikeluarkan.</p>
+                                                <p><i class="fas fa-caret-right"></i> Jika hasil plus, Anda menang
+                                                    sejumlah
+                                                    hasil yang dikeluarkan.</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- SISI KANAN: PARTAI & AKSI -->
+                                        <div class="admin-output-side">
+                                            <div class="parlay-actions" style="margin-bottom: 20px;">
+                                                <button class="btn" onclick="addParlayMatch()"
+                                                    style="width: 200px; height: 3rem;">
+                                                    <i class="fas fa-plus-circle"></i> TAMBAH PARTAI
+                                                </button>
+                                                <button class="btn btn-danger" onclick="resetParlay()"
+                                                    style="width: 120px; height: 3rem;">
+                                                    <i class="fas fa-redo"></i> RESET
+                                                </button>
+                                            </div>
+
+                                            <div id="parlay-matches-container" class="parlay-matches-scroll"
+                                                style="max-height: 600px;">
+                                                <!-- Dynamic Matches -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Dynamic Matches -->
+                                </div>
+                                <div class="parlay-notes">
+                                    <small>* <strong>Menang Full:</strong> Odds tetap.</small>
+                                    <small>* <strong>Menang 1/2:</strong> ((Odds - 1) / 2) + 1.</small>
+                                    <small>* <strong>Kalah 1/2:</strong> Odds menjadi 0.5.</small>
+                                    <small>* <strong>Seri:</strong> Odds menjadi 1.</small>
+                                </div>
+                            </div>
+
+
+                        </div>
+                </div>
+                </section>
+
+                <!-- Kas Dashboard Section (sync Google Sheet) -->
+                <section class="section section-content" id="kas-section">
+                    <div class="kas-dashboard">
+                        <!-- Navigation tabs removed as requested -->
+                        <div class="kas-sheet-panel kas-panel-wide" id="kas-sheet-panel">
+                            <div class="kas-panel-header kas-header-sheet" id="kas-sheet-panel-title"
+                                style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Data: DASHBOARD</span>
+                                <button type="button" class="btn" id="kas-refresh-btn-top" onclick="fetchKasDashboard()"
+                                    style="height: 2.2rem; min-width: auto; padding: 0 15px; font-size: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                    <i class="fas fa-sync-alt"></i> SYNC SHEET
+                                </button>
+                            </div>
+                            <div class="kas-panel-body">
+                                <div class="kas-allsaldo-summary" id="kas-allsaldo-summary"></div>
+                                <div id="kas-blocks-container"></div>
+                                <div class="table-scroll kas-sheet-table-wrapper">
+                                    <table class="kas-table" id="kas-sheet-table">
+                                        <thead id="kas-sheet-thead"></thead>
+                                        <tbody id="kas-sheet-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Layout mengikuti sheet DASHBOARD: Real Time → Balance → Sesuai Doc → Deposit/Withdraw/Pendingan → Quote → Saldo -->
+                        <div class="kas-grid kas-grid-dashboard">
+                            <div class="kas-panel kas-panel-wide">
+                                <div class="kas-panel-header kas-header-yellow">REAL TIME KAS 1</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table" id="kas-realtime-table">
+                                            <thead id="kas-realtime-thead"></thead>
+                                            <tbody id="kas-realtime-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header kas-header-green">REAL TIME BALANCE</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-realtime-balance">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header kas-header-green">BALANCE KAS 1</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-balance-kas1">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-balance-row">
+                                <div class="kas-panel-header"
+                                    style="background:rgba(255, 71, 87, 0.25); color:#ff4757; border-bottom:1px solid rgba(255, 71, 87, 0.2);">
+                                    SELISIH BALANCE</div>
+                                <div class="kas-panel-body kas-balance-box">
+                                    <span id="kas-selisih-balance" style="color:#ff4757;">-</span>
+                                </div>
+                            </div>
+                            <div class="kas-panel kas-panel-wide">
+                                <div class="kas-panel-header kas-header-doc">SESUAI DOC KAS 1</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table kas-table-doc" id="kas-doc-table">
+                                            <thead id="kas-doc-thead"></thead>
+                                            <tbody id="kas-doc-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kas-panel kas-panel-wide" id="kas-crosscheck-panel" style="display:none;">
+                                <div class="kas-panel-header kas-header-crosscheck"
+                                    style="background: linear-gradient(90deg, #ff4757, #ff6b81); color: white;">STATUS
+                                    CROSSCHECK (SELISIH)</div>
+                                <div class="kas-panel-body">
+                                    <div class="table-scroll">
+                                        <table class="kas-table kas-table-crosscheck" id="kas-crosscheck-table">
+                                            <thead id="kas-crosscheck-thead"></thead>
+                                            <tbody id="kas-crosscheck-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Group Group Bank -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-deposit">DEPOSIT BANK</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-deposit-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-withdraw">WITHDRAW</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-withdraw-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-pending">PENDINGAN BANK</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-pendingan-list"></ul>
+                                </div>
+                            </div>
+
+                            <!-- Group Group E-Wallet -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-deposit"
+                                    style="background:linear-gradient(90deg, #00d2ff, #3a7bd5);">DEPOSIT E-WALLET</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-deposit-wallet-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel" style="background:transparent; border:none; box-shadow:none;"></div>
+                            <!-- Spacer -->
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-pending"
+                                    style="background:linear-gradient(90deg, #f7971e, #ffd200);">PENDINGAN E-WALLET
+                                </div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-pendingan-wallet-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO DEPO</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-depo-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO WD</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-wd-list"></ul>
+                                </div>
+                            </div>
+                            <div class="kas-panel">
+                                <div class="kas-panel-header kas-header-white">SALDO EWALLET</div>
+                                <div class="kas-panel-body">
+                                    <ul class="kas-list" id="kas-saldo-ewallet-list"></ul>
+                                </div>
+                            </div>
+                        </div> <!-- End of kas-grid-dashboard -->
+
+                </section>
+
+                <!-- TOGEL Section -->
+                <section class="section section-content" id="togel-section">
+                    <div class="sub-tab-navigation">
+                        <button class="tab-pill active" onclick="switchTogelTab('live-togel')">
+                            <i class="fas fa-satellite-dish"></i> LIVE TOGEL
+                        </button>
+                        <button class="tab-pill" onclick="switchTogelTab('prediksi-togel')">
+                            <i class="fas fa-magic"></i> PREDIKSI TOGEL
+                        </button>
+                        <button class="tab-pill" onclick="switchTogelTab('cara-bermain-togel')">
+                            <i class="fas fa-book"></i> CARA BERMAIN
+                        </button>
+                    </div>
+
+                    <div id="prediksi-togel-tab" class="togel-tab-content">
+                        <div class="prediction-container">
+                            <div class="prediction-form-card">
+                                <h3 class="prediction-title"><i class="fas fa-magic"></i> GENERATOR PREDIKSI</h3>
+                                <p class="prediction-subtitle">Pilih pasaran atau input angka sakti Anda</p>
+
+                                <div class="prediction-inputs">
+                                    <div class="input-group">
+                                        <label>PILIH PASARAN</label>
+                                        <select id="pasaranSelect" class="prediction-select">
+                                            <option value="" disabled selected>-- Pilih Pasaran --</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label>INPUT ANGKA (MANUAL)</label>
+                                        <div class="manual-input-wrapper">
+                                            <input type="text" id="manualNumberInput"
+                                                placeholder="Min. 4 Digit (Contoh: 1234)" maxlength="20">
+                                            <button id="manualGenerateBtn" class="btn-predict-alt">MANUAL</button>
+                                        </div>
+                                        <small id="manualError" class="error-text" style="display:none;"></small>
+                                    </div>
+                                </div>
+
+                                <button id="generatePredictionBtn" class="btn-predict-main">
+                                    <span class="btn-icon">🔮</span> LIHAT PREDIKSI
+                                </button>
+                            </div>
+
+                            <div id="loadingMessage" class="prediction-loading" style="display:none;">
+                                <div class="loader-spinner"></div>
+                                <p>Mengkalkulasi Rumus...</p>
+                            </div>
+
+                            <div id="predictionSingleContainer" class="prediction-result-card" style="display:none;">
+                                <!-- Result injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="live-togel-tab" class="togel-tab-content active">
+                        <div class="live-togel-container">
+                            <div class="live-header">
+                                <div class="live-info">
+                                    <h2><i class="fas fa-satellite-dish"></i> LIVE DRAW TOGEL</h2>
+                                    <p>Real-time monitoring system for global lotto draws</p>
+                                </div>
+                                <div class="live-clock-box">
+                                    <span id="live-time">00:00:00</span>
+                                    <small>WIB / GMT+7</small>
+                                </div>
+                            </div>
+
+                            <div class="live-controls">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="searchInput"
+                                        placeholder="Cari pasaran (misal: Sydney, Macau)...">
+                                </div>
+                                <div class="filter-group">
+                                    <select id="statusFilter" class="live-select">
+                                        <option value="all">SEMUA STATUS</option>
+                                        <option value="open">OPEN</option>
+                                        <option value="bet-close">BET CLOSE</option>
+                                        <option value="result">RESULT</option>
+                                        <option value="closed">CLOSED</option>
+                                    </select>
+                                    <select id="timeSort" class="live-select">
+                                        <option value="bet-asc">WAKTU (TERDEKAT)</option>
+                                        <option value="bet-desc">WAKTU (TERLAMA)</option>
+                                        <option value="name-asc">NAMA (A-Z)</option>
+                                        <option value="status">URUT STATUS</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="marketFramesContainer" class="market-grid">
+                                <!-- Frames injected by script -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cara-bermain-togel-tab" class="togel-tab-content">
+                        <div class="prediction-form-card" style="max-width: 800px; margin: 0 auto;">
+                            <h3 class="prediction-title" style="justify-content: center;"><i class="fas fa-book"></i>
+                                PANDUAN BERMAIN TOGEL</h3>
+                            <p class="prediction-subtitle" style="text-align: center;">Pelajari cara betting dan aturan
+                                main setiap pasaran</p>
+
+                            <div class="prediction-inputs"
+                                style="grid-template-columns: 1fr; max-width: 500px; margin: 0 auto 20px;">
+                                <div class="input-group">
+                                    <label style="text-align: center;">PILIH JENIS PANDUAN</label>
+                                    <select id="guideSelect" class="prediction-select">
+                                        <option value="" disabled selected>-- Pilih Jenis Panduan --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button id="viewGuideBtn" class="btn-predict-main">
+                                <i class="fas fa-eye"></i> LIHAT PANDUAN
+                            </button>
+                        </div>
+
+                        <div id="loadingContainer" class="prediction-loading" style="display:none;">
+                            <div class="loader-spinner"></div>
+                            <p>Memuat Panduan...</p>
+                        </div>
+
+                        <div id="guideContainer" class="prediction-result-card"
+                            style="display:none; max-width: 900px; margin: 20px auto 20px;">
+                            <div class="guide-header">
+                                <h2 id="guideTitle"></h2>
+                                <div class="guide-actions">
+                                    <button id="zoomOutBtn" class="guide-ctrl-btn" title="Zoom Out" disabled><i
+                                            class="fas fa-search-minus"></i></button>
+                                    <button id="zoomInBtn" class="guide-ctrl-btn" title="Zoom In"><i
+                                            class="fas fa-search-plus"></i></button>
+                                    <button id="copyImageBtn" class="guide-ctrl-btn" title="Copy URL"><i
+                                            class="fas fa-copy"></i></button>
+                                    <button id="openModalBtn" class="guide-ctrl-btn" title="Fullscreen"><i
+                                            class="fas fa-expand"></i></button>
+                                </div>
+                            </div>
+                            <div style="background: #000; border-radius: 15px; overflow: hidden; margin-top: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: zoom-in;"
+                                onclick="openModal()">
+                                <img id="guideImage" src="" alt="Panduan Togel" referrerpolicy="no-referrer"
+                                    style="width: 100%; height: auto; display: block; transition: transform 0.3s ease;">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Jadwal Bola Section -->
+                <section class="section section-content" id="jadwal-bola-section">
+                    <div class="football-window"
+                        style="height: calc(100vh - 140px); width: 100%; overflow: hidden; border-radius: 20px; border: 1px solid rgba(255, 204, 0, 0.2); background: #000; position: relative;">
+                        <!-- Pemotongan Presisi: 
+                             - top 0: Menampilkan kembali Kotak Pencarian (Search Bar)
+                             - scrolling="yes": Agar bisa scroll sampai bawah dengan lancar
+                             - width 190% & left -45%: Agar jadwal di tengah dan iklan samping hilang
+                        -->
+                        <!-- SABAR FC Overlay (Sisi Kiri - Menutup Logo) -->
+                        <div
+                            style="position: absolute; top: 0; left: 0; background: #121212; width: calc(50% - 350px); height: 62px; z-index: 20; pointer-events: none; display: flex; align-items: center; padding-left: 20px;">
+                            <div
+                                style="display: flex; align-items: center; gap: 12px; border-left: 4px solid #ffcc00; padding: 5px 20px;">
+                                <i class="fas fa-shield-alt" style="color: #ffcc00; font-size: 18px;"></i>
+                                <span
+                                    style="color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 3px; text-shadow: 0 0 10px rgba(255,204,0,0.4);">
+                                    SABAR <span style="color: #ffcc00;">FC</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BOLA ITU BULAT Overlay (Sisi Kanan - Menutup Sign In) -->
+                        <div
+                            style="position: absolute; top: 0; right: 0; background: #121212; width: calc(50% - 130px); height: 62px; z-index: 20; pointer-events: none; display: flex; align-items: center; justify-content: flex-end; padding-right: 30px;">
+                            <div style="border-right: 4px solid #ffcc00; padding: 5px 20px; text-align: right;">
+                                <span
+                                    style="color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 2px;">
+                                    BOLA ITU <span style="color: #ffcc00;">BULAT</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Premium Search Frame (Window untuk Pencarian) -->
+                        <div
+                            style="position: absolute; top: 10px; left: calc(50% - 350px); width: 480px; height: 42px; z-index: 15; border: 2px solid rgba(255,204,0,0.8); border-radius: 8px; pointer-events: none; box-shadow: 0 0 15px rgba(255,204,0,0.3);">
+                        </div>
+
+                        <!-- Iframe SofaScore -->
+                        <iframe id="sofascore-final-widget" src="https://www.sofascore.com/football/livescore/embed"
+                            style="width: 190%; height: 100%; border: none; position: absolute; left: -45%; top: 0; transform: scale(1.02); transform-origin: top center;"
+                            scrolling="yes">
+                        </iframe>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button onclick="document.getElementById('sofascore-final-widget').src += ''" class="btn-cyber"
+                            style="padding: 10px 40px; font-family: 'Orbitron'; font-size: 11px;">
+                            REFRESH LIVE DATA
+                        </button>
+                    </div>
+                </section>
+
+                <!-- CEK DATA REKENING Section -->
+                <section class="section section-content" id="cek-rekening-section">
+                    <!-- Custom Styles for this section -->
+                    <style>
+                        /* Scoped-like styles for Rekening Checker */
+                        .rekening-app-header {
+                            text-align: center;
+                            margin-bottom: 2.5rem;
+                            position: relative;
+                        }
+
+                        .glow-text {
+                            font-family: 'Outfit', sans-serif;
+                            font-weight: 800;
+                            font-size: 2.5rem;
+                            margin: 0;
+                            letter-spacing: 4px;
+                            background: linear-gradient(to bottom, #fff, #ffd700);
+                            -webkit-background-clip: text;
+                            background-clip: text;
+                            -webkit-text-fill-color: transparent;
+                            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+                        }
+
+                        .rekening-subtitle {
+                            color: #94a3b8;
+                            font-weight: 400;
+                            letter-spacing: 8px;
+                            margin-top: 5px;
+                            font-size: 0.9rem;
+                            text-transform: uppercase;
+                            opacity: 0.8;
+                        }
+
+                        .rekening-grid-container {
+                            display: grid;
+                            grid-template-columns: 400px 1fr;
+                            /* Fixed width for input, rest for results */
+                            gap: 25px;
+                            height: calc(100vh - 220px);
+                            min-height: 600px;
+                        }
+
+                        .rekening-card {
+                            background: linear-gradient(160deg, rgba(20, 20, 20, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%);
+                            border: 1px solid rgba(255, 215, 0, 0.15);
+                            /* Gold tint border */
+                            border-top: 3px solid rgba(255, 215, 0, 0.5);
+                            /* Accent Top */
+                            border-radius: 16px;
+                            padding: 25px;
+                            display: flex;
+                            flex-direction: column;
+                            height: 100%;
+                            position: relative;
+                            overflow: hidden;
+                            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                            /* backdrop-filter removed to prevent input issues */
+                        }
+
+                        .rekening-card h2 {
+                            font-size: 1.2rem;
+                            font-weight: 700;
+                            margin-bottom: 20px;
+                            color: #ffd700;
+                            /* Gold */
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                            padding-bottom: 15px;
+                            letter-spacing: 1px;
+                        }
+
+                        .instruction-text {
+                            font-size: 0.8rem;
+                            color: #64748b;
+                            margin-bottom: 12px;
+                            font-style: italic;
+                        }
+
+                        .rekening-textarea {
+                            flex-grow: 1;
+                            width: 100%;
+                            background: rgba(0, 0, 0, 0.4);
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            border-radius: 12px;
+                            padding: 20px;
+                            color: #e2e8f0;
+                            font-family: 'Consolas', monospace;
+                            margin-bottom: 20px;
+                            resize: none;
+                            font-size: 14px;
+                            line-height: 1.6;
+                            transition: all 0.3s ease;
+                            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+                            position: relative;
+                            /* Ensure it stays on top */
+                            z-index: 10;
+                        }
+
+                        .rekening-textarea:focus {
+                            outline: none;
+                            border-color: #ffd700;
+                            box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+                            background: rgba(0, 0, 0, 0.6);
+                        }
+
+                        .rekening-textarea::placeholder {
+                            color: rgba(255, 255, 255, 0.2);
+                        }
+
+                        .rekening-btn-group {
+                            display: grid;
+                            grid-template-columns: 1fr 100px;
+                            gap: 15px;
+                        }
+
+                        /* Absensi Styles */
+                        .absensi-main {
+                            background: rgba(15, 23, 42, 0.95);
+                            border-radius: 14px;
+                            padding: 25px;
+                            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                        }
+
+                        /* Revert grid system on absensi-container as we use tabs now */
+                        .absensi-container {
+                            display: block;
+                        }
+
+                        .btn-gold {
+                            background: linear-gradient(to bottom, #ffd700, #b8860b);
+                            color: #000;
+                            border: none;
+                            border-radius: 8px;
+                            font-weight: 800;
+                            cursor: pointer;
+                            transition: transform 0.2s, box-shadow 0.2s;
+                            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+                            height: 3rem;
+                        }
+
+                        .btn-gold:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+                            background: linear-gradient(to bottom, #ffed4a, #d4a017);
+                        }
+
+                        .btn-gold:disabled {
+                            background: #333;
+                            color: #777;
+                            cursor: not-allowed;
+                            transform: none;
+                            box-shadow: none;
+                        }
+
+                        .btn-danger-custom {
+                            background: rgba(255, 71, 87, 0.1);
+                            color: #ff4757;
+                            border: 1px solid rgba(255, 71, 87, 0.3);
+                            border-radius: 8px;
+                            font-weight: 700;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                            height: 3rem;
+                        }
+
+                        .btn-danger-custom:hover {
+                            background: rgba(255, 71, 87, 0.2);
+                            border-color: #ff4757;
+                            color: #fff;
+                        }
+
+                        .results-column {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 20px;
+                            height: 100%;
+                        }
+
+                        .result-box {
+                            background: rgba(0, 0, 0, 0.4);
+                            border-radius: 12px;
+                            border: 1px solid rgba(255, 255, 255, 0.05);
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            overflow: hidden;
+                        }
+
+                        .result-header {
+                            padding: 15px;
+                            background: rgba(255, 255, 255, 0.02);
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        }
+
+                        .result-header h3 {
+                            font-size: 0.9rem;
+                            font-weight: 700;
+                            margin: 0;
+                        }
+
+                        .btn-icon-sm {
+                            background: transparent;
+                            border: none;
+                            color: var(--text-muted);
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            font-size: 0.75rem;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            transition: 0.2s;
+                        }
+
+                        .btn-icon-sm:hover {
+                            background: rgba(255, 255, 255, 0.05);
+                            color: #fff;
+                        }
+
+                        .table-responsive {
+                            flex-grow: 1;
+                            overflow-y: auto;
+                        }
+
+                        .result-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        .result-table th {
+                            background: rgba(0, 0, 0, 0.6);
+                            color: #94a3b8;
+                            font-size: 0.75rem;
+                            text-align: left;
+                            padding: 10px 15px;
+                            position: sticky;
+                            top: 0;
+                        }
+
+                        .result-table td {
+                            padding: 8px 15px;
+                            font-size: 0.85rem;
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+                        }
+
+                        .empty-row td {
+                            text-align: center;
+                            padding: 20px;
+                            color: #444;
+                            font-style: italic;
+                        }
+
+                        /* Status Colors */
+                        .text-success {
+                            color: #00ff75 !important;
+                        }
+
+                        .text-danger {
+                            color: #ff4757 !important;
+                        }
+                    </style>
+
+                    <div class="rekening-app-header">
+                        <h1 class="glow-text">CEK DATA REKENING</h1>
+                        <p class="rekening-subtitle">WDBOS</p>
+                    </div>
+
+                    <div class="rekening-grid-container">
+                        <!-- Left Column: Input -->
+                        <div class="input-section">
+                            <div class="rekening-card">
+                                <h2><span class="material-icons-round">input</span> Input Data Rekening</h2>
+                                <p class="instruction-text">Masukkan nomor rekening (satu per baris)</p>
+                                <textarea id="accountInput" class="rekening-textarea" placeholder="Contoh:
+1234567890
+0987654321"></textarea>
+                                <div class="rekening-btn-group">
+                                    <button id="processBtn" class="btn-gold">PROSES DATA</button>
+                                    <button id="clearBtn" class="btn-danger-custom">HAPUS</button>
+                                </div>
+                                <div id="statusMessage" class="status-msg" style="margin-top: 10px; font-size: 0.8rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Results -->
+                        <div class="results-column">
+                            <!-- Found Data -->
+                            <div class="result-box" id="foundCard">
+                                <div class="result-header">
+                                    <h3 class="text-success">DATA DITEMUKAN ✅</h3>
+                                    <button id="copyFoundBtn" class="btn-icon-sm" title="Salin Data Ditemukan">
+                                        <span class="material-icons-round" style="font-size:14px;">content_copy</span>
+                                        SALIN
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="foundTable" class="result-table">
+                                        <thead>
+                                            <tr>
+                                                <th>JENIS BANK</th>
+                                                <th>NAMA REKENING</th>
+                                                <th>NOMOR REKENING</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="empty-row">
+                                                <td colspan="3">Menunggu data...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Not Found Data -->
+                            <div class="result-box" id="notFoundCard">
+                                <div class="result-header">
+                                    <h3 class="text-danger">DATA TIDAK DITEMUKAN ❌</h3>
+                                    <button id="copyNotFoundBtn" class="btn-icon-sm" title="Salin Data Tidak Ditemukan">
+                                        <span class="material-icons-round" style="font-size:14px;">content_copy</span>
+                                        SALIN
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="notFoundTable" class="result-table">
+                                        <thead>
+                                            <tr>
+                                                <th>INPUT</th>
+                                                <th>STATUS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="empty-row">
+                                                <td colspan="2">Tidak ada data error</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </section>
+
+                <section class="section-content" id="galeri-section">
+                    <div class="gallery-header"
+                        style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="font-size: 2rem; color: var(--primary); margin-bottom: 5px;">Koleksi Galeri</h2>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" onclick="document.getElementById('gallery-upload-input').click()"
+                                style="height: 3rem; background: var(--primary); color: #000;">
+                                <i class="fas fa-upload"></i> UPLOAD FOTO
+                            </button>
+                            <input type="file" id="gallery-upload-input" accept="image/*" style="display: none;"
+                                onchange="handleGalleryUpload(this)">
+                            <button class="btn" onclick="fetchGallery()" style="height: 3rem;">
+                                <i class="fas fa-sync-alt"></i> REFRESH GALERI
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="gallery-loading" class="loading-state"
+                        style="display: none; text-align: center; padding: 50px;">
+                        <div class="spinner" style="margin: 0 auto 15px;"></div>
+                        <p>Memuat koleksi gambar...</p>
+                    </div>
+
+                    <div id="gallery-grid" class="gallery-grid">
+                        <!-- Images will be loaded here -->
+                    </div>
+                </section>
+
+
+
+                <section class="section-content" id="alien-command-section">
+                    <div class="header">
+                        <div class="warning-text">⚠️ JANGAN LUPA CROSSCHECK ⚠️</div>
+                    </div>
+
+                    <div class="alien-layout">
+                        <!-- COLUMN 1: LIMIT CLAIM -->
+                        <div class="card alien-card">
+                            <div class="card-title">LIMIT CLAIM REDUCTION</div>
+                            <div class="alien-card-body">
+                                <div class="alien-input-group">
+                                    <label>INITIAL DATA (A)</label>
+                                    <input type="text" id="limitA" value="400,000"
+                                        oninput="formatNominal(this); calculateSubtraction('limit')"
+                                        class="cyber-input">
+                                </div>
+                                <div class="alien-input-group" style="margin-top: 15px;">
+                                    <label>CURRENT DATA (B)</label>
+                                    <input type="text" id="limitB"
+                                        oninput="formatNominal(this); calculateSubtraction('limit')"
+                                        placeholder="Input B" class="cyber-input">
+                                </div>
+                                <div class="alien-separator"></div>
+                                <div class="alien-result-box">
+                                    <small>DIFFERENCE (A - B)</small>
+                                    <div id="limitResult" class="alien-val-gold">400,000</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- COLUMN 2: RAW DATA -->
+                        <div class="card alien-card">
+                            <div class="card-title">RAW DATA INJECTION</div>
+                            <textarea id="spinInput" oninput="calculateSpinProfit()"
+                                placeholder="> INSERT DECRYPTION KEY OR DATA STREAM..."
+                                style="flex: 1; min-height: 150px;"></textarea>
+                            <div style="text-align: center; margin-top: 20px; padding-bottom: 5px;">
+                                <button onclick="resetData()" class="btn-danger-cyber">[ RESET SYSTEM ]</button>
+                            </div>
+                        </div>
+
+                        <!-- COLUMN 3: ASSET VALUE -->
+                        <div class="card alien-card asset-value-card">
+                            <div class="card-title">DECRYPTED ASSET VALUE</div>
+                            <div class="value-label">TOTAL CALCULATED NET WORTH</div>
+                            <div id="resultDisplay" class="large-value">0.00</div>
+                            <div class="data-frag-box" id="spinCountDisplay">DATA FRAGMENTS: 0</div>
+                        </div>
+
+                        <!-- COLUMN 4: AWARD -->
+                        <div class="card alien-card">
+                            <div class="card-title">AWARD REDUCTION</div>
+                            <div class="alien-card-body">
+                                <div class="alien-input-group">
+                                    <label>INITIAL DATA (A)</label>
+                                    <input type="text" id="awardA"
+                                        oninput="formatNominal(this); calculateSubtraction('award')"
+                                        placeholder="Input A" class="cyber-input">
+                                </div>
+                                <div class="alien-input-group" style="margin-top: 15px;">
+                                    <label>CURRENT DATA (B)</label>
+                                    <input type="text" id="awardB"
+                                        oninput="formatNominal(this); calculateSubtraction('award')"
+                                        placeholder="Input B" class="cyber-input">
+                                </div>
+                                <div class="alien-separator"></div>
+                                <div class="alien-result-box">
+                                    <small>DIFFERENCE (A - B)</small>
+                                    <div id="awardResult" class="alien-val-green">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FULL WIDTH HISTORY -->
+                    <div class="card alien-card" style="margin-top: 25px;">
+
+
+
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div class="card-title" style="margin: 0;">DECRYPTION HISTORY</div>
+                            <button onclick="resetHistory()" class="btn-danger-cyber"
+                                style="padding: 5px 20px !important;">[ CLEAR LOGS ]</button>
+                        </div>
+                        <div style="max-height: 250px; overflow-y: auto;">
+                            <table class="alien-table">
+                                <thead>
+                                    <tr>
+                                        <th>TIME</th>
+                                        <th>FRAGMENTS</th>
+                                        <th>TOTAL PROFIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr class="empty-row">
+                                        <td colspan="3" style="text-align: center; padding: 30px 0; color: #444;">
+                                            Waiting
+                                            for data fragments...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                </section>
+
+
+
+        </div> <!-- End of container/main-content -->
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="extension-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload to Drive</h3><span class="close-modal">&times;</span>
+            </div>
+            <form id="extension-form">
+                <div class="form-group"><label>Extension Name</label><input type="text" id="ext-name" required>
+                </div>
+                <div class="form-group">
+                    <label>ZIP File</label>
+                    <div class="file-input-wrapper"><input type="file" id="ext-file" accept=".zip" required><i
+                            class="fas fa-file-zipper"></i></div>
+                </div>
+                <button type="submit" class="btn" id="upload-btn" style="max-width: 100%; height: 3.5rem; width: 100%;">
+                    <strong>START UPLOAD</strong>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="note-modal-title">New Note</h3><span class="close-modal">&times;</span>
+            </div>
+            <form id="note-form">
+                <input type="hidden" id="note-id">
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="note-category" placeholder="Personal, Work, Apps..." list="category-list">
+                    <datalist id="category-list"></datalist>
+                </div>
+                <div class="form-group"><label>Title</label><input type="text" id="note-title" required></div>
+                <div class="form-group"><label>Content</label><textarea id="note-content" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn" id="save-note-btn"
+                    style="max-width: 100%; height: 3.5rem; width: 100%;">
+                    <strong>SAVE NOTE</strong>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 id="confirm-title">Are you sure?</h3>
+            </div>
+            <p id="confirm-message" style="color: var(--text-muted); margin-bottom: 2rem;">This action cannot be
+                undone.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="confirm-cancel" class="btn" style="height: 3rem; width: 8rem; --color: #94a3b8;">
+                    CANCEL
+                </button>
+                <button id="confirm-ok" class="btn btn-danger" style="height: 3rem; width: 8rem;">
+                    YES
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Note Modal -->
+    <div class="modal" id="view-note-modal">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <div class="close-modal" id="close-view-note">&times;</div>
+            <div class="modal-header">
+                <h3 id="view-note-title" style="word-break: break-word;">Note Title</h3>
+            </div>
+            <div class="modal-body" style="margin-top: 20px;">
+                <div id="view-note-category" class="badge"
+                    style="background: var(--primary); color: #000; font-weight:800; display:inline-block; margin-bottom:15px;">
+                    Category</div>
+                <div id="view-note-content"
+                    style="white-space: pre-wrap; font-family: monospace; font-size: 1.1rem; line-height: 1.6; color: #e2e8f0; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; max-height: 60vh; overflow-y: auto;">
+                    Note content goes here...
+                </div>
+                <div id="view-note-date"
+                    style="margin-top: 15px; color: #94a3b8; font-size: 0.9rem; text-align: right;"></div>
+            </div>
+            <div class="modal-footer"
+                style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <button id="view-note-copy" class="btn" style="height: 2.5rem;"><i class="fas fa-copy"></i>
+                    COPY</button>
+                <button id="view-note-edit" class="btn" style="height: 2.5rem;"><i class="fas fa-edit"></i>
+                    EDIT</button>
+                <button id="view-note-delete" class="btn btn-danger" style="height: 2.5rem; --color: #ff4757;"><i
+                        class="fas fa-trash"></i> DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+
+    <div id="linkPreviewModal" class="modal live-preview-modal">
+        <div class="modal-content preview-content">
+            <div class="preview-header">
+                <button id="openInNewTabBtn" class="preview-ctrl-btn" title="Buka di Tab Baru">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+                <h3 id="previewTitle">Preview Link</h3>
+                <button id="closePreviewBtn" class="preview-ctrl-btn close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="preview-body">
+                <div id="loadingFrame" class="loading-overlay">
+                    <div class="spinner"></div>
+                    <p>Memuat halaman resmi...</p>
+                </div>
+                <iframe id="previewFrame" src="" frameborder="0"></iframe>
+            </div>
+            <div class="preview-footer">
+                <button id="closePreviewBtn2" class="btn" style="height: 3rem; width: 100%;">Tutup Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Notification -->
+    <div id="errorNotification" class="notification-toast">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="errorMessage"></span>
+    </div>
+
+    <!-- Image Modal for Guides -->
+    <div id="imageModal" class="guide-image-modal">
+        <span id="modalCloseBtn" class="modal-close">&times;</span>
+        <div class="modal-content-wrapper">
+            <img class="modal-content-img" id="modalImage" referrerpolicy="no-referrer">
+        </div>
+        <div class="modal-controls">
+            <button id="modalZoomOutBtn" class="modal-btn"><i class="fas fa-search-minus"></i></button>
+            <button id="modalResetBtn" class="modal-btn"><i class="fas fa-undo"></i></button>
+            <button id="modalZoomInBtn" class="modal-btn"><i class="fas fa-search-plus"></i></button>
+        </div>
+    </div>
+
+    <div id="successNotification" class="notification-toast" style="background: rgba(34, 197, 94, 0.95);">
+        <i class="fas fa-check-circle"></i> URL Gambar Berhasil Disalin!
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Custom Luxury Modal for Alien Center -->
+    <div id="confirmModal" class="modal-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10001; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+        <div class="modal-box"
+            style="background: #0a0a0a; border: 1px solid var(--luxury-gold-alien); padding: 40px; width: 450px; text-align: center; border-radius: 8px; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);">
+            <div class="modal-header"
+                style="color: #ff003c; font-family: 'Orbitron'; font-weight: 900; margin-bottom: 25px; font-size: 1.5rem; letter-spacing: 2px;">
+                WARNING: SYSTEM PURGE
+            </div>
+            <div class="modal-body"
+                style="margin-bottom: 35px; font-family: 'Rajdhani'; color: #e0e0e0; font-size: 1.1rem;">
+                <p style="margin-bottom: 15px;">CONFIRM DELETION PROTOCOL?</p>
+                <small style="color: #666; display: block; line-height: 1.4;">This action will permanently erase all
+                    decryption logs from the local core database.</small>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 20px; justify-content: center;">
+                <button onclick="closeModal()" class="btn"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid #444; color: #94a3b8; padding: 10px 30px;">CANCEL</button>
+                <button onclick="confirmClearHistory()" class="btn-danger-cyber" style="padding: 10px 30px;">CONFIRM
+                    PURGE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alien Center Elements -->
+    <div class="scanline-overlay"></div>
+    <canvas id="matrixCanvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- SheetJS Library -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
+<p>Update baru Sun Feb 15 16:22:21 SEAST 2026</p>
+<p>Update baru Mon Feb 16 13:31:11 SEAST 2026</p>
